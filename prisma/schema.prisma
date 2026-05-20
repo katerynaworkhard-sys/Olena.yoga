@@ -30,3 +30,15 @@ model Booking {
   yogaClass   YogaClass @relation(fields: [classId], references: [id])
   createdAt   DateTime @default(now())
 }
+
+model PlanRequest {
+  id          String   @id @default(uuid())
+  plan        String
+  firstName   String
+  lastName    String
+  email       String
+  phone       String
+  comment     String?
+  status      String   @default("new")
+  createdAt   DateTime @default(now())
+}

@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react'
 import { X, Download, Plus, Trash2, LogOut } from 'lucide-react'
 
-const ADMIN_PASSWORD = 'olena2025'
-
 interface Booking {
   id: string
   firstName: string
@@ -35,16 +33,42 @@ interface YogaClass {
   }
 }
 
+interface PlanRequest {
+  id: string
+  plan: string
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  comment: string | null
+  status: string
+  createdAt: string
+}
+
+const PLAN_LABEL: Record<string, string> = {
+  '3-class-pack': '3-Class Pack',
+  'monthly-unlimited': 'Monthly Unlimited',
+}
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [activeTab, setActiveTab] = useState<'bookings' | 'schedule'>('bookings')
+  const [activeTab, setActiveTab] = useState<'bookings' | 'schedule' | 'requests'>('bookings')
   const [bookings, setBookings] = useState<Booking[]>([])
   const [classes, setClasses] = useState<YogaClass[]>([])
+  const [requests, setRequests] = useState<PlanRequest[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showAddClass, setShowAddClass] = useState(false)
-  const [newClass, setNewClass] = useState({
+  const [newClass, setNewClass] = useState<{
+    dayOfWeek: string
+    date: string
+    time: string
+    type: string
+    duration: number | ''
+    location: string
+    maxSpots: number | ''
+  }>({
     dayOfWeek: 'Monday',
     date: '',
     time: '',
@@ -55,9 +79,22 @@ export default function AdminPage() {
   })
 
   useEffect(() => {
-    const auth = localStorage.getItem('adminAuth')
-    if (auth === 'true') {
-      setIsAuthenticated(true)
+    let cancelled = false
+    fetch('/api/admin/session')
+      .then(r => r.json())
+      .then(data => {
+        if (cancelled) return
+        if (data.authenticated) {
+          setIsAuthenticated(true)
+        } else {
+          setIsLoading(false)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setIsLoading(false)
+      })
+    return () => {
+      cancelled = true
     }
   }, [])
 
@@ -70,19 +107,30 @@ export default function AdminPage() {
   const fetchData = async () => {
     setIsLoading(true)
     try {
-      const [bookingsRes, classesRes] = await Promise.all([
+      const [bookingsRes, classesRes, requestsRes] = await Promise.all([
         fetch('/api/bookings'),
         fetch('/api/classes'),
+        fetch('/api/requests'),
       ])
-      
+
+      if (bookingsRes.status === 401 || classesRes.status === 401 || requestsRes.status === 401) {
+        setIsAuthenticated(false)
+        return
+      }
+
       if (bookingsRes.ok) {
         const bookingsData = await bookingsRes.json()
         setBookings(bookingsData)
       }
-      
+
       if (classesRes.ok) {
         const classesData = await classesRes.json()
         setClasses(classesData)
+      }
+
+      if (requestsRes.ok) {
+        const requestsData = await requestsRes.json()
+        setRequests(requestsData)
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -91,21 +139,50 @@ export default function AdminPage() {
     }
   }
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true)
-      localStorage.setItem('adminAuth', 'true')
-      setError('')
-    } else {
-      setError('Incorrect password')
+  const handleDeleteRequest = async (id: string) => {
+    if (!confirm('Delete this request?')) return
+    try {
+      const response = await fetch(`/api/requests?id=${id}`, { method: 'DELETE' })
+      if (response.ok) {
+        setRequests(requests.filter(r => r.id !== id))
+      }
+    } catch (error) {
+      console.error('Error deleting request:', error)
     }
   }
 
-  const handleLogout = () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      })
+      if (res.ok) {
+        setPassword('')
+        setIsAuthenticated(true)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || 'Incorrect password')
+      }
+    } catch {
+      setError('Login failed. Please try again.')
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' })
+    } catch {
+      // proceed even if the request fails — the cookie is the source of truth
+    }
     setIsAuthenticated(false)
-    localStorage.removeItem('adminAuth')
     setPassword('')
+    setBookings([])
+    setClasses([])
+    setRequests([])
   }
 
   const handleDeleteBooking = async (id: string) => {
@@ -256,6 +333,16 @@ export default function AdminPage() {
             >
               Schedule ({classes.length})
             </button>
+            <button
+              onClick={() => setActiveTab('requests')}
+              className={`py-4 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'requests'
+                  ? 'border-[#7BA7BC] text-[#7BA7BC]'
+                  : 'border-transparent text-[#1A1A18]/60 hover:text-[#1A1A18]'
+              }`}
+            >
+              Requests ({requests.length})
+            </button>
           </div>
         </div>
       </div>
@@ -327,7 +414,7 @@ export default function AdminPage() {
               </div>
             )}
           </div>
-        ) : (
+        ) : activeTab === 'schedule' ? (
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="font-serif text-xl text-[#1A1A18]">Class Schedule</h2>
@@ -339,7 +426,7 @@ export default function AdminPage() {
                 Add New Class
               </button>
             </div>
-            
+
             {classes.length === 0 ? (
               <p className="text-center text-[#1A1A18]/60 py-12">No classes scheduled.</p>
             ) : (
@@ -365,6 +452,61 @@ export default function AdminPage() {
                       <button
                         onClick={() => handleDeleteClass(cls.id)}
                         className="text-red-500 hover:text-red-700 transition-colors"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="font-serif text-xl text-[#1A1A18]">Plan Requests</h2>
+            </div>
+
+            {requests.length === 0 ? (
+              <p className="text-center text-[#1A1A18]/60 py-12">No requests yet.</p>
+            ) : (
+              <div className="space-y-4">
+                {requests.map((req) => (
+                  <div key={req.id} className="bg-white rounded-sm border border-[#E8E4DE] p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2 flex-wrap">
+                          <span className="text-xs uppercase tracking-wider text-[#7BA7BC] font-medium">
+                            {PLAN_LABEL[req.plan] || req.plan}
+                          </span>
+                          <span className="text-xs text-[#1A1A18]/40">
+                            {new Date(req.createdAt).toLocaleString()}
+                          </span>
+                        </div>
+                        <h3 className="font-medium text-[#1A1A18]">
+                          {req.firstName} {req.lastName}
+                        </h3>
+                        <div className="text-sm text-[#1A1A18]/70 mt-1 space-y-0.5">
+                          <p>
+                            <a href={`mailto:${req.email}`} className="hover:text-[#7BA7BC] transition-colors">
+                              {req.email}
+                            </a>
+                          </p>
+                          <p>
+                            <a href={`tel:${req.phone}`} className="hover:text-[#7BA7BC] transition-colors">
+                              {req.phone}
+                            </a>
+                          </p>
+                        </div>
+                        {req.comment && (
+                          <p className="text-sm text-[#1A1A18]/80 mt-3 p-3 bg-[#FAFAF8] border-l-2 border-[#7BA7BC] italic">
+                            {req.comment}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => handleDeleteRequest(req.id)}
+                        className="text-red-500 hover:text-red-700 transition-colors shrink-0"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -451,7 +593,7 @@ export default function AdminPage() {
                     min="30"
                     max="120"
                     value={newClass.duration}
-                    onChange={(e) => setNewClass({ ...newClass, duration: parseInt(e.target.value) })}
+                    onChange={(e) => setNewClass({ ...newClass, duration: e.target.value === '' ? '' : parseInt(e.target.value, 10) })}
                     className="w-full px-3 py-2.5 border border-[#E8E4DE] rounded-sm text-sm focus:outline-none focus:border-[#7BA7BC]"
                   />
                 </div>
@@ -476,7 +618,7 @@ export default function AdminPage() {
                     min="1"
                     max="50"
                     value={newClass.maxSpots}
-                    onChange={(e) => setNewClass({ ...newClass, maxSpots: parseInt(e.target.value) })}
+                    onChange={(e) => setNewClass({ ...newClass, maxSpots: e.target.value === '' ? '' : parseInt(e.target.value, 10) })}
                     className="w-full px-3 py-2.5 border border-[#E8E4DE] rounded-sm text-sm focus:outline-none focus:border-[#7BA7BC]"
                   />
                 </div>

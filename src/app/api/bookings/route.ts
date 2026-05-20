@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAdmin } from '@/lib/auth'
 
 export async function GET() {
+  const denied = await requireAdmin()
+  if (denied) return denied
   try {
     const bookings = await prisma.booking.findMany({
       include: {
@@ -70,6 +73,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
   try {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')

@@ -257,7 +257,9 @@ export default function Home() {
                 <p className="text-sm text-[#1A1A18]/60 mb-1">Save a little, flow more.</p>
                 <p className="text-xs text-[#7BA7BC] mb-6">$21.67/class</p>
                 <Link
-                  href="/schedule"
+                  href="/request/3-class-pack"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-block w-full bg-[#7BA7BC] text-white py-3 text-sm font-medium rounded-sm hover:bg-[#1A1A18] transition-colors"
                 >
                   Book Now
@@ -269,7 +271,9 @@ export default function Home() {
                 <p className="text-sm text-[#1A1A18]/60 mb-1">12 classes. Full commitment, full results.</p>
                 <p className="text-xs text-[#7BA7BC] mb-6">$15/class</p>
                 <Link
-                  href="/schedule"
+                  href="/request/monthly-unlimited"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-block w-full bg-[#1A1A18] text-[#FAFAF8] py-3 text-sm font-medium rounded-sm hover:bg-[#7BA7BC] transition-colors"
                 >
                   Book Now
