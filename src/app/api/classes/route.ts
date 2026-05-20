@@ -27,7 +27,7 @@ export async function GET() {
       ],
     })
     return NextResponse.json(classes)
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch classes' }, { status: 500 })
   }
 }
@@ -74,7 +74,7 @@ export async function DELETE(request: NextRequest) {
     })
 
     return NextResponse.json({ success: true })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to delete class' }, { status: 500 })
   }
 }

@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useEffect } from "react"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
-import { MapPin, Droplets, Sun, Leaf, Shirt, Sparkles } from "lucide-react"
+import { Droplets, Sun, Leaf, Sparkles } from "lucide-react"
 
 export default function Home() {
   useEffect(() => {

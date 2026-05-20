@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { X, Download, Plus, Trash2, LogOut } from 'lucide-react'
 
 interface Booking {
@@ -78,34 +78,7 @@ export default function AdminPage() {
     maxSpots: 10,
   })
 
-  useEffect(() => {
-    let cancelled = false
-    fetch('/api/admin/session')
-      .then(r => r.json())
-      .then(data => {
-        if (cancelled) return
-        if (data.authenticated) {
-          setIsAuthenticated(true)
-        } else {
-          setIsLoading(false)
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setIsLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchData()
-    }
-  }, [isAuthenticated])
-
-  const fetchData = async () => {
-    setIsLoading(true)
+  const fetchData = useCallback(async () => {
     try {
       const [bookingsRes, classesRes, requestsRes] = await Promise.all([
         fetch('/api/bookings'),
@@ -137,7 +110,27 @@ export default function AdminPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/admin/session')
+      .then(r => r.json())
+      .then(data => {
+        if (cancelled) return
+        if (data.authenticated) {
+          setIsAuthenticated(true)
+          return fetchData()
+        }
+        setIsLoading(false)
+      })
+      .catch(() => {
+        if (!cancelled) setIsLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [fetchData])
 
   const handleDeleteRequest = async (id: string) => {
     if (!confirm('Delete this request?')) return
@@ -163,6 +156,7 @@ export default function AdminPage() {
       if (res.ok) {
         setPassword('')
         setIsAuthenticated(true)
+        fetchData()
       } else {
         const data = await res.json().catch(() => ({}))
         setError(data.error || 'Incorrect password')
