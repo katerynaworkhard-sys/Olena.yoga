@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model YogaClass {
+  id          String   @id @default(uuid())
+  dayOfWeek   String
+  date        DateTime
+  time        String
+  type        String
+  duration    Int
+  location    String
+  maxSpots    Int      @default(10)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  bookings    Booking[]
+}
+
+model Booking {
+  id          String   @id @default(uuid())
+  firstName   String
+  lastName    String
+  email       String
+  phone       String?
+  classId     String
+  yogaClass   YogaClass @relation(fields: [classId], references: [id])
+  createdAt   DateTime @default(now())
+}

@@ -1,0 +1,165 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FAFAF8;
+  --foreground: #1A1A18;
+  --accent: #7BA7BC;
+  --accent-sand: #C4B9A8;
+  --border-subtle: #E8E4DE;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-accent-sand: var(--accent-sand);
+  --color-border-subtle: var(--border-subtle);
+  --font-sans: var(--font-dm-sans);
+  --font-serif: var(--font-cormorant);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Hero Section Animations */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(var(--slide-distance, 20px));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(var(--slide-distance, -10px));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-hero-up {
+  opacity: 0;
+  animation: fadeSlideUp var(--duration, 0.9s) cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+.animate-hero-down {
+  opacity: 0;
+  animation: fadeSlideDown var(--duration, 0.8s) cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+.animate-hero-scale {
+  opacity: 0;
+  animation: fadeScaleIn var(--duration, 1s) cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-up,
+  .animate-hero-down,
+  .animate-hero-scale {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* Scroll-triggered feature strip animations */
+@keyframes growDown {
+  from {
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  to {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+}
+
+@keyframes fadeSlideRight {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.line-animate {
+  transform: scaleY(1);
+  transform-origin: top;
+}
+
+.line-animate.animate-in {
+  animation: growDown 0.5s ease-out forwards;
+}
+
+.col-animate {
+  opacity: 1;
+}
+
+.col-animate.animate-in {
+  animation: fadeSlideRight 0.7s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+/* About Strip Animation */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes growLine {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.about-col {
+  opacity: 0;
+}
+
+.about-col.visible {
+  animation: fadeUp 0.7s ease-out forwards;
+}
+
+.about-line {
+  transform-origin: top;
+  transform: scaleY(0);
+}
+
+.about-line.visible {
+  animation: growLine 0.5s ease-out forwards;
+}
