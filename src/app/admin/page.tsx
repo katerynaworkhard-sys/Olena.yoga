@@ -45,6 +45,29 @@ interface PlanRequest {
   createdAt: string
 }
 
+interface ContactMessage {
+  id: string
+  name: string
+  email: string
+  phone: string
+  message: string
+  status: string
+  createdAt: string
+}
+
+interface BusinessInquiry {
+  id: string
+  name: string
+  email: string
+  company: string | null
+  location: string | null
+  inquiryType: string
+  preferredDates: string | null
+  message: string
+  status: string
+  createdAt: string
+}
+
 const PLAN_LABEL: Record<string, string> = {
   '3-class-pack': '3-Class Pack',
   'monthly-unlimited': 'Monthly Unlimited',
@@ -54,10 +77,12 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [activeTab, setActiveTab] = useState<'bookings' | 'schedule' | 'requests'>('bookings')
+  const [activeTab, setActiveTab] = useState<'bookings' | 'schedule' | 'requests' | 'messages' | 'inquiries'>('bookings')
   const [bookings, setBookings] = useState<Booking[]>([])
   const [classes, setClasses] = useState<YogaClass[]>([])
   const [requests, setRequests] = useState<PlanRequest[]>([])
+  const [messages, setMessages] = useState<ContactMessage[]>([])
+  const [inquiries, setInquiries] = useState<BusinessInquiry[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showAddClass, setShowAddClass] = useState(false)
   const [newClass, setNewClass] = useState<{
@@ -80,13 +105,21 @@ export default function AdminPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [bookingsRes, classesRes, requestsRes] = await Promise.all([
+      const [bookingsRes, classesRes, requestsRes, messagesRes, inquiriesRes] = await Promise.all([
         fetch('/api/bookings'),
         fetch('/api/classes'),
         fetch('/api/requests'),
+        fetch('/api/messages'),
+        fetch('/api/inquiries'),
       ])
 
-      if (bookingsRes.status === 401 || classesRes.status === 401 || requestsRes.status === 401) {
+      if (
+        bookingsRes.status === 401 ||
+        classesRes.status === 401 ||
+        requestsRes.status === 401 ||
+        messagesRes.status === 401 ||
+        inquiriesRes.status === 401
+      ) {
         setIsAuthenticated(false)
         return
       }
@@ -104,6 +137,16 @@ export default function AdminPage() {
       if (requestsRes.ok) {
         const requestsData = await requestsRes.json()
         setRequests(requestsData)
+      }
+
+      if (messagesRes.ok) {
+        const messagesData = await messagesRes.json()
+        setMessages(messagesData)
+      }
+
+      if (inquiriesRes.ok) {
+        const inquiriesData = await inquiriesRes.json()
+        setInquiries(inquiriesData)
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -144,6 +187,30 @@ export default function AdminPage() {
     }
   }
 
+  const handleDeleteMessage = async (id: string) => {
+    if (!confirm('Delete this message?')) return
+    try {
+      const response = await fetch(`/api/messages?id=${id}`, { method: 'DELETE' })
+      if (response.ok) {
+        setMessages(messages.filter(m => m.id !== id))
+      }
+    } catch (error) {
+      console.error('Error deleting message:', error)
+    }
+  }
+
+  const handleDeleteInquiry = async (id: string) => {
+    if (!confirm('Delete this inquiry?')) return
+    try {
+      const response = await fetch(`/api/inquiries?id=${id}`, { method: 'DELETE' })
+      if (response.ok) {
+        setInquiries(inquiries.filter(i => i.id !== id))
+      }
+    } catch (error) {
+      console.error('Error deleting inquiry:', error)
+    }
+  }
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -177,6 +244,8 @@ export default function AdminPage() {
     setBookings([])
     setClasses([])
     setRequests([])
+    setMessages([])
+    setInquiries([])
   }
 
   const handleDeleteBooking = async (id: string) => {
@@ -337,6 +406,26 @@ export default function AdminPage() {
             >
               Requests ({requests.length})
             </button>
+            <button
+              onClick={() => setActiveTab('messages')}
+              className={`py-4 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'messages'
+                  ? 'border-[#7BA7BC] text-[#7BA7BC]'
+                  : 'border-transparent text-[#1A1A18]/60 hover:text-[#1A1A18]'
+              }`}
+            >
+              Messages ({messages.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('inquiries')}
+              className={`py-4 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'inquiries'
+                  ? 'border-[#7BA7BC] text-[#7BA7BC]'
+                  : 'border-transparent text-[#1A1A18]/60 hover:text-[#1A1A18]'
+              }`}
+            >
+              Inquiries ({inquiries.length})
+            </button>
           </div>
         </div>
       </div>
@@ -455,7 +544,7 @@ export default function AdminPage() {
               </div>
             )}
           </div>
-        ) : (
+        ) : activeTab === 'requests' ? (
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="font-serif text-xl text-[#1A1A18]">Plan Requests</h2>
@@ -500,6 +589,112 @@ export default function AdminPage() {
                       </div>
                       <button
                         onClick={() => handleDeleteRequest(req.id)}
+                        className="text-red-500 hover:text-red-700 transition-colors shrink-0"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : activeTab === 'messages' ? (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="font-serif text-xl text-[#1A1A18]">Contact Messages</h2>
+            </div>
+
+            {messages.length === 0 ? (
+              <p className="text-center text-[#1A1A18]/60 py-12">No messages yet.</p>
+            ) : (
+              <div className="space-y-4">
+                {messages.map((msg) => (
+                  <div key={msg.id} className="bg-white rounded-sm border border-[#E8E4DE] p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2 flex-wrap">
+                          <span className="text-xs uppercase tracking-wider text-[#7BA7BC] font-medium">
+                            Contact
+                          </span>
+                          <span className="text-xs text-[#1A1A18]/40">
+                            {new Date(msg.createdAt).toLocaleString()}
+                          </span>
+                        </div>
+                        <h3 className="font-medium text-[#1A1A18]">{msg.name}</h3>
+                        <div className="text-sm text-[#1A1A18]/70 mt-1 space-y-0.5">
+                          <p>
+                            <a href={`mailto:${msg.email}`} className="hover:text-[#7BA7BC] transition-colors">
+                              {msg.email}
+                            </a>
+                          </p>
+                          <p>
+                            <a href={`tel:${msg.phone}`} className="hover:text-[#7BA7BC] transition-colors">
+                              {msg.phone}
+                            </a>
+                          </p>
+                        </div>
+                        <p className="text-sm text-[#1A1A18]/80 mt-3 p-3 bg-[#FAFAF8] border-l-2 border-[#7BA7BC] whitespace-pre-wrap">
+                          {msg.message}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteMessage(msg.id)}
+                        className="text-red-500 hover:text-red-700 transition-colors shrink-0"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="font-serif text-xl text-[#1A1A18]">Partnership Inquiries</h2>
+            </div>
+
+            {inquiries.length === 0 ? (
+              <p className="text-center text-[#1A1A18]/60 py-12">No inquiries yet.</p>
+            ) : (
+              <div className="space-y-4">
+                {inquiries.map((inq) => (
+                  <div key={inq.id} className="bg-white rounded-sm border border-[#E8E4DE] p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2 flex-wrap">
+                          <span className="text-xs uppercase tracking-wider text-[#7BA7BC] font-medium">
+                            {inq.inquiryType}
+                          </span>
+                          <span className="text-xs text-[#1A1A18]/40">
+                            {new Date(inq.createdAt).toLocaleString()}
+                          </span>
+                        </div>
+                        <h3 className="font-medium text-[#1A1A18]">
+                          {inq.name}
+                          {inq.company && (
+                            <span className="text-[#1A1A18]/60 font-normal"> · {inq.company}</span>
+                          )}
+                        </h3>
+                        <div className="text-sm text-[#1A1A18]/70 mt-1 space-y-0.5">
+                          <p>
+                            <a href={`mailto:${inq.email}`} className="hover:text-[#7BA7BC] transition-colors">
+                              {inq.email}
+                            </a>
+                          </p>
+                          {inq.location && <p>📍 {inq.location}</p>}
+                          {inq.preferredDates && (
+                            <p className="text-[#1A1A18]/60">Preferred dates: {inq.preferredDates}</p>
+                          )}
+                        </div>
+                        <p className="text-sm text-[#1A1A18]/80 mt-3 p-3 bg-[#FAFAF8] border-l-2 border-[#7BA7BC] whitespace-pre-wrap">
+                          {inq.message}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteInquiry(inq.id)}
                         className="text-red-500 hover:text-red-700 transition-colors shrink-0"
                       >
                         <Trash2 size={16} />

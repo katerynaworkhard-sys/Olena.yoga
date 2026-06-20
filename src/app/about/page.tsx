@@ -137,9 +137,23 @@ export default function AboutPage() {
         </section>
 
         {/* CTA */}
-        <section className="py-20 bg-[#7BA7BC]/10">
-          <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
-            <h2 className="font-serif text-3xl md:text-4xl text-[#1A1A18] mb-8">
+        <section className="relative py-28 md:py-36 overflow-hidden bg-[#FAFAF8]">
+          {/* Background video at low opacity */}
+          <video
+            className="absolute inset-0 w-full h-full object-cover opacity-40"
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster="/about-cta-poster.jpg"
+          >
+            <source src="/about-cta.mp4" type="video/mp4" />
+          </video>
+          {/* Soft wash to keep text legible */}
+          <div className="absolute inset-0 bg-white/20" />
+
+          <div className="relative z-10 max-w-4xl mx-auto px-6 lg:px-8 text-center">
+            <h2 className="font-serif text-3xl md:text-4xl text-[#1A1A18] mb-8 drop-shadow-sm">
               Ready to begin your journey?
             </h2>
             <Link

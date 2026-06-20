@@ -21,6 +21,7 @@ export default function Footer() {
               <Link href="/schedule" className="text-sm hover:text-[#7BA7BC] transition-colors">Schedule</Link>
               <Link href="/about" className="text-sm hover:text-[#7BA7BC] transition-colors">About</Link>
               <Link href="/contact" className="text-sm hover:text-[#7BA7BC] transition-colors">Contact</Link>
+              <Link href="/inquiries" className="text-sm hover:text-[#7BA7BC] transition-colors">Make an Inquiry</Link>
             </div>
           </div>
 
@@ -29,8 +30,7 @@ export default function Footer() {
               Connect
             </h4>
             <div className="flex flex-col gap-2">
-              <a href="#" className="text-sm hover:text-[#7BA7BC] transition-colors">Instagram</a>
-              <a href="#" className="text-sm hover:text-[#7BA7BC] transition-colors">WhatsApp</a>
+              <a href="https://www.instagram.com/olena_pruska/" target="_blank" rel="noopener noreferrer" className="text-sm hover:text-[#7BA7BC] transition-colors">Instagram</a>
               <a href="mailto:olena.pruska@yahoo.com" className="text-sm hover:text-[#7BA7BC] transition-colors">
                 olena.pruska@yahoo.com
               </a>

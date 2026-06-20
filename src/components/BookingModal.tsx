@@ -141,9 +141,10 @@ export default function BookingModal({ isOpen, onClose, yogaClass }: BookingModa
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-[#1A1A18] mb-1.5">Phone (optional)</label>
+                  <label className="block text-sm font-medium text-[#1A1A18] mb-1.5">Phone</label>
                   <input
                     type="tel"
+                    required
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="w-full px-3 py-2.5 border border-[#E8E4DE] rounded-sm text-sm focus:outline-none focus:border-[#7BA7BC] bg-white"

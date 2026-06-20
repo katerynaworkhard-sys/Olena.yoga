@@ -51,3 +51,9 @@ prisma/dev.db
 
 # Claude Code tooling (local worktrees, hooks, etc.)
 .claude/
+
+# Raw source media kept locally — optimized web versions live in public/
+/video*.mov
+/video*.MP4
+/a_*.jpeg
+/b_*.jpeg

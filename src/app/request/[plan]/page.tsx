@@ -2,8 +2,8 @@
 
 import { use, useState } from 'react'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
-import { Sparkles, Check } from 'lucide-react'
+import { notFound, useRouter } from 'next/navigation'
+import { Sparkles, Check, ArrowLeft } from 'lucide-react'
 
 type PlanSlug = '3-class-pack' | 'monthly-unlimited'
 
@@ -49,12 +49,21 @@ export default function RequestPage({
   params: Promise<{ plan: string }>
 }) {
   const { plan } = use(params)
+  const router = useRouter()
 
   if (!isPlanSlug(plan)) {
     notFound()
   }
 
   const details = PLAN_DETAILS[plan]
+
+  const handleBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back()
+    } else {
+      router.push('/')
+    }
+  }
 
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -97,6 +106,15 @@ export default function RequestPage({
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FAFAF8] via-[#F5F1EA] to-[#FAFAF8]">
       <div className="max-w-3xl mx-auto px-6 lg:px-8 py-16 lg:py-24">
+        {/* Back button */}
+        <button
+          onClick={handleBack}
+          className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-[#1A1A18]/60 hover:text-[#7BA7BC] transition-colors mb-8"
+        >
+          <ArrowLeft size={16} />
+          Back
+        </button>
+
         {/* Brand crest */}
         <div className="text-center mb-10">
           <Link

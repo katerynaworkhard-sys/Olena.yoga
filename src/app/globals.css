@@ -21,6 +21,12 @@
 body {
   background: var(--background);
   color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-kerning: normal;
+  /* Never let the browser fake bold/italic — use the real loaded faces. */
+  font-synthesis: none;
 }
 
 html {

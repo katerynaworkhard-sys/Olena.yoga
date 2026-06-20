@@ -42,3 +42,26 @@ model PlanRequest {
   status      String   @default("new")
   createdAt   DateTime @default(now())
 }
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String
+  message   String
+  status    String   @default("new")
+  createdAt DateTime @default(now())
+}
+
+model BusinessInquiry {
+  id             String   @id @default(uuid())
+  name           String
+  email          String
+  company        String?
+  location       String?
+  inquiryType    String
+  preferredDates String?
+  message        String
+  status         String   @default("new")
+  createdAt      DateTime @default(now())
+}

@@ -9,21 +9,35 @@ export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     message: '',
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    setIsSuccess(true)
-    setIsSubmitting(false)
-    setFormData({ name: '', email: '', message: '' })
+    setError('')
+
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Something went wrong. Please try again.')
+      }
+      setIsSuccess(true)
+      setFormData({ name: '', email: '', phone: '', message: '' })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -90,6 +104,16 @@ export default function ContactPage() {
                       />
                     </div>
                     <div>
+                      <label className="block text-sm font-medium text-[#1A1A18] mb-2">Phone</label>
+                      <input
+                        type="tel"
+                        required
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        className="w-full px-4 py-3 border border-[#E8E4DE] rounded-sm focus:outline-none focus:border-[#7BA7BC] bg-[#FAFAF8]"
+                      />
+                    </div>
+                    <div>
                       <label className="block text-sm font-medium text-[#1A1A18] mb-2">Message</label>
                       <textarea
                         required
@@ -99,6 +123,11 @@ export default function ContactPage() {
                         className="w-full px-4 py-3 border border-[#E8E4DE] rounded-sm focus:outline-none focus:border-[#7BA7BC] bg-[#FAFAF8] resize-none"
                       />
                     </div>
+                    {error && (
+                      <p className="text-sm text-red-600 bg-red-50 border border-red-100 px-4 py-3 rounded-sm">
+                        {error}
+                      </p>
+                    )}
                     <button
                       type="submit"
                       disabled={isSubmitting}
@@ -132,9 +161,14 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-serif text-xl text-[#1A1A18] mb-4">Social</h3>
                   <div className="flex gap-4">
-                    <a href="#" className="text-[#1A1A18]/70 hover:text-[#7BA7BC] transition-colors">Instagram</a>
-                    <span className="text-[#E8E4DE]">|</span>
-                    <a href="#" className="text-[#1A1A18]/70 hover:text-[#7BA7BC] transition-colors">WhatsApp</a>
+                    <a
+                      href="https://www.instagram.com/olena_pruska/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#1A1A18]/70 hover:text-[#7BA7BC] transition-colors"
+                    >
+                      Instagram
+                    </a>
                   </div>
                 </div>
 
