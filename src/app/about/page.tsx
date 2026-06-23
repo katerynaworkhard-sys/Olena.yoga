@@ -16,7 +16,7 @@ export default function AboutPage() {
                 <div className="relative aspect-[3/4]">
                   <Image
                     src="/lenaproject/lena2.JPG"
-                    alt="Olena Pruska walking on the beach"
+                    alt="Olena Pruska, yoga teacher"
                     fill
                     className="object-cover rounded-sm"
                   />
@@ -36,7 +36,7 @@ export default function AboutPage() {
                   <p>
                     I hold a 500-hour Yoga Teacher Training certification and have taught at 
                     CorePower Yoga and INSAND, where I combined functional fitness with restorative 
-                    yoga. Today, I bring all of that to the most beautiful studio in the world — the beach.
+                    yoga. Today, I bring all of that to my own classes, private sessions, and retreats.
                   </p>
                   <p>
                     My classes are welcoming, grounding, and always a little bit joyful. I teach 
@@ -93,8 +93,8 @@ export default function AboutPage() {
               <div className="flex gap-6">
                 <div className="w-2 bg-[#7BA7BC] rounded-full shrink-0"></div>
                 <div>
-                  <h3 className="font-medium text-[#1A1A18] text-lg">Beach Yoga</h3>
-                  <p className="text-[#7BA7BC] text-sm mb-1">Independent Teacher · Orange County</p>
+                  <h3 className="font-medium text-[#1A1A18] text-lg">Independent Practice</h3>
+                  <p className="text-[#7BA7BC] text-sm mb-1">Yoga Teacher · Orange County</p>
                   <p className="text-[#1A1A18]/50 text-sm">2024 – Present</p>
                 </div>
               </div>

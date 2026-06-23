@@ -175,8 +175,8 @@ export default function ContactPage() {
                 <div className="bg-[#C4B9A8]/10 rounded-sm p-6">
                   <h3 className="font-serif text-lg text-[#1A1A18] mb-3">Location Note</h3>
                   <p className="text-sm text-[#1A1A18]/60 leading-relaxed">
-                    Classes are held outdoors on beaches across Orange County. 
-                    Exact meeting points are shared upon booking.
+                    Classes are held across Huntington Beach & Orange County.
+                    Exact locations are shared upon booking.
                   </p>
                 </div>
               </div>

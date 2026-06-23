@@ -71,7 +71,7 @@ export default function InquiriesPage() {
               Make an Inquiry
             </h1>
             <p className="text-lg text-[#1A1A18]/60 max-w-2xl mx-auto mb-8">
-              Bring intentional beach yoga to your resort, retreat, or private event. Whether
+              Bring intentional yoga to your resort, retreat, studio, or private event. Whether
               it&apos;s a one-time session or an ongoing partnership, let&apos;s create something
               memorable together.
             </p>

@@ -20,7 +20,7 @@ const CLASSES: YogaStyle[] = [
     image: "/classes/vinyasa.jpg",
     shortDesc: "Dynamic, breath-led flow that strengthens and energizes.",
     longDesc:
-      "A breath-led flow where every movement meets the rhythm of your inhale and exhale. Expect a steady build of heat — not from a heated studio, but from your own ujjayi breath and the steady cadence of the sequence. You'll move through sun salutations, balancing postures, and grounding flows, finishing in a deep, well-earned savasana with the sound of the waves beside you. Best for anyone who wants to feel strong, focused, and fully present by the end.",
+      "A breath-led flow where every movement meets the rhythm of your inhale and exhale. Expect a steady build of heat — not from a heated studio, but from your own ujjayi breath and the steady cadence of the sequence. You'll move through sun salutations, balancing postures, and grounding flows, finishing in a deep, well-earned savasana as your breath settles. Best for anyone who wants to feel strong, focused, and fully present by the end.",
   },
   {
     title: "Hatha",
@@ -34,7 +34,7 @@ const CLASSES: YogaStyle[] = [
     image: "/classes/yin-yoga.jpg",
     shortDesc: "Deep, slow, restorative. For recovery, flexibility, and calm.",
     longDesc:
-      "Long, quiet holds — three to five minutes per pose — targeting the deep connective tissue around the hips, spine, and shoulders. We meet the body where it is and let gravity do the work. Yin is for nervous-system reset, joint mobility, and the kind of release you can't force in faster classes. Bring a blanket. The ocean takes care of the soundtrack.",
+      "Long, quiet holds — three to five minutes per pose — targeting the deep connective tissue around the hips, spine, and shoulders. We meet the body where it is and let gravity do the work. Yin is for nervous-system reset, joint mobility, and the kind of release you can't force in faster classes. Bring a blanket and let the stillness do the rest.",
   },
   {
     title: "Yoga Sculpt",
@@ -124,20 +124,20 @@ export default function Home() {
               <span className="text-xs uppercase tracking-wider text-white/80 font-medium">English · Ukrainian · Russian</span>
             </div>
 
-            {/* "Beach Yoga" - delay 0.30s, slide 20px */}
+            {/* "Yoga Teacher" - delay 0.30s, slide 20px */}
             <h1
               className="animate-hero-up font-serif text-6xl md:text-7xl lg:text-8xl font-light leading-[1.05] text-white drop-shadow-lg"
               style={{ animationDelay: '0.30s', '--slide-distance': '20px' } as React.CSSProperties}
             >
-              Beach Yoga
+              Yoga Teacher
             </h1>
 
-            {/* "Huntington Beach" - delay 0.45s, slide 20px */}
+            {/* "in Huntington Beach" - delay 0.45s, slide 20px */}
             <h1
               className="animate-hero-up font-serif text-6xl md:text-7xl lg:text-8xl font-light leading-[1.05] italic text-white drop-shadow-lg mb-6"
               style={{ animationDelay: '0.45s', '--slide-distance': '20px' } as React.CSSProperties}
             >
-              Huntington Beach
+              in Huntington Beach
             </h1>
 
             {/* Subtitle - delay 0.60s, slide 12px */}
@@ -145,7 +145,7 @@ export default function Home() {
               className="animate-hero-up text-lg md:text-xl text-white/90 mb-8 max-w-xl mx-auto drop-shadow"
               style={{ animationDelay: '0.60s', '--slide-distance': '12px' } as React.CSSProperties}
             >
-              Vinyasa, Hatha & Yin — on the sand, under the California sky.
+              Vinyasa, Hatha & Yin — mindful movement for every body.
             </p>
 
             {/* Button - delay 0.75s, slide 8px */}
@@ -187,9 +187,9 @@ export default function Home() {
               <div className="about-col flex">
                 <div className="about-line w-0.5 bg-[#7BA7BC] self-stretch mr-6 shrink-0" />
                 <div className="py-2">
-                  <h3 className="font-serif text-xl mb-3 text-[#1A1A18]">Outdoors & Alive</h3>
+                  <h3 className="font-serif text-xl mb-3 text-[#1A1A18]">Grounded & Present</h3>
                   <p className="text-sm text-[#1A1A18]/60 leading-relaxed">
-                    Feel the sand beneath your feet and the ocean breeze on your skin. Nature is the studio.
+                    Slow down, breathe deeply, and reconnect with your body — one mindful movement at a time.
                   </p>
                 </div>
               </div>
@@ -201,7 +201,7 @@ export default function Home() {
         <section className="py-24 bg-[#FAFAF8]">
           <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
             <p className="font-serif text-3xl md:text-4xl lg:text-5xl text-[#1A1A18] leading-relaxed">
-              "Where the ocean meets your breath — that's where we practice."
+              "Where breath meets movement — that's where the practice begins."
             </p>
           </div>
         </section>
@@ -223,7 +223,7 @@ export default function Home() {
                   <div className="relative aspect-square mb-4 overflow-hidden rounded-sm">
                     <Image
                       src={cls.image}
-                      alt={`${cls.title} beach yoga`}
+                      alt={`${cls.title} yoga`}
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
@@ -243,77 +243,27 @@ export default function Home() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-6">
               <div className="flex items-start gap-3">
                 <span className="text-lg">🧘</span>
-                <p className="text-sm text-[#1A1A18]/70">Yoga mat (or rent one from Olena — ask when booking)</p>
+                <p className="text-sm text-[#1A1A18]/70">Your own yoga mat</p>
               </div>
               <div className="flex items-start gap-3">
                 <span className="text-lg">💧</span>
-                <p className="text-sm text-[#1A1A18]/70">Water bottle (stay hydrated in the sun!)</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-lg">🕶️</span>
-                <p className="text-sm text-[#1A1A18]/70">Sunscreen & sunglasses</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="text-lg">🌿</span>
-                <p className="text-sm text-[#1A1A18]/70">Light towel or blanket (for Yin/Savasana)</p>
+                <p className="text-sm text-[#1A1A18]/70">Water bottle to stay hydrated</p>
               </div>
               <div className="flex items-start gap-3">
                 <span className="text-lg">👟</span>
-                <p className="text-sm text-[#1A1A18]/70">Comfortable activewear</p>
+                <p className="text-sm text-[#1A1A18]/70">Comfortable activewear you can move in</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-lg">🌿</span>
+                <p className="text-sm text-[#1A1A18]/70">A light towel or blanket (for Yin & Savasana)</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-lg">⏱️</span>
+                <p className="text-sm text-[#1A1A18]/70">Arrive a few minutes early to settle in</p>
               </div>
               <div className="flex items-start gap-3">
                 <span className="text-lg">✅</span>
-                <p className="text-sm text-[#1A1A18]/70">Open mind & good vibes</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Pricing Section */}
-        <section className="py-20 bg-white">
-          <div className="max-w-5xl mx-auto px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <span className="text-xs uppercase tracking-wider text-[#7BA7BC] font-medium">Pricing</span>
-              <h2 className="font-serif text-4xl md:text-5xl text-[#1A1A18] mt-2">Invest in Your Practice</h2>
-            </div>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="border border-[#E8E4DE] rounded-sm p-8 text-center hover:border-[#7BA7BC] transition-colors">
-                <h3 className="font-serif text-2xl text-[#1A1A18] mb-2">Drop-In</h3>
-                <p className="font-serif text-4xl text-[#7BA7BC] mb-2">$25</p>
-                <p className="text-sm text-[#1A1A18]/60 mb-6">Single class. Pay and show up.</p>
-                <Link
-                  href="/schedule"
-                  className="inline-block w-full bg-[#1A1A18] text-[#FAFAF8] py-3 text-sm font-medium rounded-sm hover:bg-[#7BA7BC] transition-colors"
-                >
-                  Book Now
-                </Link>
-              </div>
-              <div className="border border-[#7BA7BC] rounded-sm p-8 text-center relative">
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#7BA7BC] text-white text-xs px-3 py-1 rounded-full">
-                  Popular
-                </span>
-                <h3 className="font-serif text-2xl text-[#1A1A18] mb-2">3-Class Pack</h3>
-                <p className="font-serif text-4xl text-[#7BA7BC] mb-2">$65</p>
-                <p className="text-sm text-[#1A1A18]/60 mb-1">Save a little, flow more.</p>
-                <p className="text-xs text-[#7BA7BC] mb-6">$21.67/class</p>
-                <Link
-                  href="/request/3-class-pack"
-                  className="inline-block w-full bg-[#7BA7BC] text-white py-3 text-sm font-medium rounded-sm hover:bg-[#1A1A18] transition-colors"
-                >
-                  Book Now
-                </Link>
-              </div>
-              <div className="border border-[#E8E4DE] rounded-sm p-8 text-center hover:border-[#7BA7BC] transition-colors">
-                <h3 className="font-serif text-2xl text-[#1A1A18] mb-2">Monthly Unlimited</h3>
-                <p className="font-serif text-4xl text-[#7BA7BC] mb-2">$180</p>
-                <p className="text-sm text-[#1A1A18]/60 mb-1">12 classes. Full commitment, full results.</p>
-                <p className="text-xs text-[#7BA7BC] mb-6">$15/class</p>
-                <Link
-                  href="/request/monthly-unlimited"
-                  className="inline-block w-full bg-[#1A1A18] text-[#FAFAF8] py-3 text-sm font-medium rounded-sm hover:bg-[#7BA7BC] transition-colors"
-                >
-                  Book Now
-                </Link>
+                <p className="text-sm text-[#1A1A18]/70">An open mind & good vibes</p>
               </div>
             </div>
           </div>
@@ -329,7 +279,7 @@ export default function Home() {
             <div className="grid md:grid-cols-3 gap-6">
               <div className="bg-white p-8 rounded-sm border border-[#E8E4DE]">
                 <p className="text-[#1A1A18]/70 mb-6 leading-relaxed">
-                  "Olena's classes are the highlight of my week. She creates such a welcoming, peaceful atmosphere on the beach."
+                  "Olena's classes are the highlight of my week. She creates such a welcoming, peaceful atmosphere in every session."
                 </p>
                 <p className="text-sm font-medium text-[#1A1A18]">— Sarah M., Huntington Beach</p>
               </div>
@@ -392,7 +342,7 @@ export default function Home() {
             <div className="relative aspect-[16/10] w-full">
               <Image
                 src={activeClass.image}
-                alt={`${activeClass.title} beach yoga`}
+                alt={`${activeClass.title} yoga`}
                 fill
                 className="object-cover rounded-t-lg"
               />

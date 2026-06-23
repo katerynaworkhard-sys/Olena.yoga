@@ -58,8 +58,8 @@ export default async function SchedulePage() {
               This Week's Classes
             </h1>
             <p className="text-lg text-[#1A1A18]/60 max-w-2xl">
-              All classes take place on the beach in Huntington Beach & Orange County. 
-              Check each session for the exact meeting spot.
+              Classes across Huntington Beach & Orange County.
+              Check each session for the exact location.
             </p>
           </div>
         </section>
@@ -101,8 +101,8 @@ export default async function SchedulePage() {
           <div className="max-w-3xl mx-auto px-6 lg:px-8">
             <div className="bg-white rounded-sm p-6 text-center">
               <p className="text-[#1A1A18]/70 text-sm">
-                <span className="font-medium">What to bring:</span> Bring your mat, water, sunscreen, and a light towel. 
-                Wear comfortable activewear suitable for outdoor practice.
+                <span className="font-medium">What to bring:</span> Bring your mat, water, and a light towel or blanket.
+                Wear comfortable activewear you can move in.
               </p>
             </div>
           </div>

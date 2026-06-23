@@ -19,8 +19,8 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Olena Pruska | Beach Yoga Huntington Beach",
-  description: "Certified yoga teacher offering beach yoga classes in Huntington Beach & Orange County. Vinyasa, Hatha, Yin & Yoga Sculpt on the sand.",
+  title: "Olena Pruska | Yoga Teacher · Huntington Beach",
+  description: "Certified yoga teacher in Huntington Beach & Orange County. Vinyasa, Hatha, Yin & Yoga Sculpt — private sessions, group classes, retreats & collaborations.",
 };
 
 export default function RootLayout({

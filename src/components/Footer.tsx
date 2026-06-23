@@ -8,7 +8,7 @@ export default function Footer() {
           <div>
             <h3 className="font-serif text-2xl font-medium mb-3">Olena Pruska</h3>
             <p className="text-[#C4B9A8] text-sm">
-              Beach yoga for every body. Orange County, CA.
+              Mindful yoga for every body. Orange County, CA.
             </p>
           </div>
 
