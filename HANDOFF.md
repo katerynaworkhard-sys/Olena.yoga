@@ -1,8 +1,12 @@
 # Olena.yoga — Project Handoff
 
-> Living handoff doc for **Olena Pruska — Beach Yoga (Huntington Beach)** marketing + booking site.
+> Living handoff doc for **Olena Pruska — Yoga Teacher (Huntington Beach / Orange County)** site.
 > Audience: a developer/agent picking this up cold. Covers what the project is, how to run it,
 > the architecture, and a complete chronological log of every change made in the work session.
+>
+> **Concept note:** the project began as a *beach yoga* site and was later repositioned to a
+> **general yoga teacher** site focused on classes, private sessions, retreats, and collaborations
+> (see §8.15–§8.16). "Huntington Beach" now appears only as her location, not as a theme.
 
 Last updated: 2026-06-20
 
@@ -77,13 +81,16 @@ Other scripts: `npm run build`, `npm run start`, `npm run lint`.
 
 ```
 DATABASE_URL=file:./prisma/dev.db
-ADMIN_PASSWORD=admin                       # ⚠️ dev value — change for production
+ADMIN_PASSWORD=<set in .env>               # changed from "admin" to a real value (see §8.17)
 AUTH_SECRET=<64-char random base64url>     # already a strong value locally
 ```
 
 - `.env` and `prisma/dev.db` are **git-ignored** (confirmed not tracked).
 - **`.env.example` exists and is committed** (placeholders only, no real secret) — confirmed it does
   NOT leak the real `AUTH_SECRET`.
+- The admin password was changed away from the `admin` dev value (§8.17). The real value is **only**
+  in the local `.env` and is deliberately **not written into this committed doc**. `.env` is read at
+  startup, so changing it requires a dev-server restart. Env vars must also be set in any host/deploy.
 
 ---
 
@@ -258,7 +265,7 @@ model BusinessInquiry {       // NEW (8.10) — resort/retreat/private inquiries
 
 | Path | Type | Notes |
 |---|---|---|
-| `/` | client | Home — full-bleed hero **video**, About strip, classes (click → detail modal), What to Bring (gradient), pricing, testimonials, CTA |
+| `/` | client | Home — full-bleed hero **video**, About strip, classes (click → detail modal), What to Bring (gradient), testimonials, CTA. (Pricing section removed in §8.15.) |
 | `/schedule` | server | Upcoming classes (DB, `date >= today`) grouped by day; cards open `BookingModal` |
 | `/about` | server | Bio, stats, experience timeline, certs/languages, **CTA with background video** |
 | `/contact` | client | Name / Email / **Phone** / Message → `POST /api/messages` (all required) |
@@ -267,6 +274,9 @@ model BusinessInquiry {       // NEW (8.10) — resort/retreat/private inquiries
 | `/request/monthly-unlimited` | client | "By Invitation" plan form + **Back** button |
 | `/request/<other>` | — | `notFound()` → 404 (only the two slugs are valid) |
 | `/admin` | client | Login gate → tabs: **Bookings** (CSV export), **Schedule** (add/delete), **Requests**, **Messages**, **Inquiries** |
+
+> Note: the `/request/*` pages still exist and work if reached directly, but **nothing links to them
+> anymore** since the home Pricing section (which held the "Book Now" links) was removed in §8.15.
 
 ---
 
@@ -421,17 +431,69 @@ admin was reproduced as an HTML mockup from live data because screenshots time o
 - **Gotcha hit:** editing `next.config.ts` made all `/api/*` routes 404 (stale Turbopack cache) →
   fixed with `rm -rf .next` + restart.
 
-### 8.14 HANDOFF.md — full rewrite (this update)
+### 8.14 HANDOFF.md — full rewrite
 - Rewrote the doc so every reference section (§1–§7) reflects the current state (5 models, 5 admin
   tabs, new routes/libs, security) and the change log captures all turns end-to-end.
+- Committed + pushed everything to `main` (commit `79780e7`; `.gitignore` updated to keep raw source
+  media out — see §9).
+
+### 8.15 Remove home Pricing section
+**Intent:** Olena dropped fixed class pricing as the site shifts toward cooperation + general info.
+- **`src/app/page.tsx`:** deleted the entire "Pricing" / "Invest in Your Practice" section
+  (Drop-In $25 / 3-Class Pack $65 / Monthly Unlimited $180 cards). Home now flows
+  What to Bring → Testimonials. The `/request/*` pages still exist but are no longer linked from home.
+- **Verify:** `/` 200; "Invest in Your Practice" not present; no console errors.
+
+### 8.16 Reposition copy: beach yoga → general yoga teacher (whole site)
+**Intent:** No longer "beach yoga" — present Olena as a yoga teacher in general (classes, private
+sessions, retreats, collaborations). Photos/videos kept; only text changed. "Huntington Beach"
+remains as a place name only.
+- **`src/app/page.tsx` (home):**
+  - Hero headline "Beach Yoga / Huntington Beach" → "Yoga Teacher / *in Huntington Beach*".
+  - Hero subtitle "…on the sand, under the California sky." → "…mindful movement for every body."
+  - About strip col 3 "Outdoors & Alive" + sand/ocean text → "Grounded & Present" + "Slow down,
+    breathe deeply, and reconnect with your body — one mindful movement at a time."
+  - Tagline "Where the ocean meets your breath…" → "Where breath meets movement — that's where the
+    practice begins."
+  - Testimonial "…peaceful atmosphere on the beach." → "…in every session."
+  - Class modal copy: Vinyasa "…savasana with the sound of the waves beside you." → "…as your breath
+    settles."; Yin "Bring a blanket. The ocean takes care of the soundtrack." → "Bring a blanket and
+    let the stillness do the rest."
+  - Class image alt text "…beach yoga" → "…yoga" (card + modal).
+  - **"What to Bring"** fully generalized: removed "(or rent one from Olena — ask when booking)",
+    "stay hydrated in the sun!", and "Sunscreen & sunglasses"; new 6 items = Your own yoga mat /
+    Water bottle to stay hydrated / Comfortable activewear you can move in / A light towel or blanket
+    (for Yin & Savasana) / Arrive a few minutes early to settle in / An open mind & good vibes.
+- **`src/app/schedule/page.tsx`:** header "All classes take place on the beach…" → "Classes across
+  Huntington Beach & Orange County. Check each session for the exact location."; "What to bring" note
+  dropped sunscreen + "outdoor practice".
+- **`src/app/contact/page.tsx`:** Location Note "held outdoors on beaches across Orange County" →
+  "held across Huntington Beach & Orange County. Exact locations are shared upon booking."
+- **`src/app/inquiries/page.tsx`:** intro "Bring intentional beach yoga…" → "Bring intentional yoga
+  to your resort, retreat, studio, or private event…".
+- **`src/app/about/page.tsx`:** bio "…the most beautiful studio in the world — the beach." → "…my own
+  classes, private sessions, and retreats."; timeline entry "Beach Yoga / Independent Teacher" →
+  "Independent Practice / Yoga Teacher"; image alt "…walking on the beach" → "Olena Pruska, yoga teacher".
+- **`src/components/Footer.tsx`:** "Beach yoga for every body." → "Mindful yoga for every body."
+- **`src/app/layout.tsx`:** page title → "Olena Pruska | Yoga Teacher · Huntington Beach"; meta
+  description → general ("private sessions, group classes, retreats & collaborations").
+- **Verify:** site-wide sweep of `/ /schedule /about /contact /inquiries` for
+  beach/ocean/sand/sunscreen/outdoors = **0 matches** on every page; no console errors. Committed +
+  pushed to `main` (commit `fe76ffb`).
+
+### 8.17 Admin password changed
+- Changed `ADMIN_PASSWORD` in `.env` from the `admin` dev value to a real value (restart applied; old
+  password → 401, new → 200, verified). The literal value is intentionally **not stored in this
+  committed doc**; it lives only in the git-ignored `.env`. (Existing sessions stay valid because they
+  are signed by `AUTH_SECRET`, which was unchanged.)
 
 ---
 
 ## 9. Known issues / housekeeping / suggested follow-ups
 
-1. **⚠️ `ADMIN_PASSWORD` is `admin`** (dev). Biggest real risk — set a strong unique value in `.env`
-   before any public deploy. `AUTH_SECRET` is already strong; rotating it invalidates existing
-   admin sessions.
+1. **Admin password** has been set to a real value in `.env` (§8.17) — no longer the `admin` default.
+   It exists only in the local `.env`; for any hosted deploy, set `ADMIN_PASSWORD` (and `AUTH_SECRET`)
+   in that environment too. `AUTH_SECRET` is already strong; rotating it invalidates existing sessions.
 2. **Untracked source media in repo root** (not git-ignored): `video 1.mov`, `video 2.MP4`, and the
    `a_*.jpeg` / `b_*.jpeg` source photos. Optimized versions live in `public/`. Recommend moving the
    raw sources out or adding them to `.gitignore` so only `public/` assets get committed. Also a stray
