@@ -57,3 +57,6 @@ prisma/dev.db
 /video*.MP4
 /a_*.jpeg
 /b_*.jpeg
+/photo*.jpg
+/photo*.jpeg
+/certificate.png

@@ -150,11 +150,11 @@ export default function Home() {
 
             {/* Button - delay 0.75s, slide 8px */}
             <Link
-              href="/schedule"
+              href="/contact"
               className="animate-hero-up inline-block bg-white text-[#1A1A18] px-8 py-4 text-sm font-medium rounded-sm hover:bg-[#7BA7BC] hover:text-white transition-colors"
               style={{ animationDelay: '0.75s', '--slide-distance': '8px' } as React.CSSProperties}
             >
-              View Schedule
+              Get in Touch
             </Link>
           </div>
         </section>
@@ -303,13 +303,13 @@ export default function Home() {
         <section className="py-24 bg-[#1A1A18]">
           <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
             <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl text-[#FAFAF8] mb-8">
-              Ready to roll out your mat?
+              Let's work together
             </h2>
             <Link
-              href="/schedule"
+              href="/contact"
               className="inline-block bg-[#FAFAF8] text-[#1A1A18] px-8 py-4 text-sm font-medium rounded-sm hover:bg-[#7BA7BC] hover:text-white transition-colors"
             >
-              See This Week's Schedule
+              Get in Touch
             </Link>
           </div>
         </section>
@@ -358,10 +358,10 @@ export default function Home() {
                 {activeClass.longDesc}
               </p>
               <Link
-                href="/schedule"
+                href="/contact"
                 className="block w-full bg-[#1A1A18] text-white text-center py-4 text-sm font-medium tracking-wider uppercase rounded-sm hover:bg-[#7BA7BC] transition-colors"
               >
-                Reserve Your Spot
+                Get in Touch
               </Link>
             </div>
           </div>

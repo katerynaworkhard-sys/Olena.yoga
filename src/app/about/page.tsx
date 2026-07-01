@@ -136,6 +136,28 @@ export default function AboutPage() {
           </div>
         </section>
 
+        {/* Certificate */}
+        <section className="py-20 bg-[#FAFAF8]">
+          <div className="max-w-3xl mx-auto px-6 lg:px-8 text-center">
+            <span className="text-xs uppercase tracking-wider text-[#7BA7BC] font-medium">Credential</span>
+            <h2 className="font-serif text-3xl md:text-4xl text-[#1A1A18] mt-2 mb-8">
+              500-Hour Certification
+            </h2>
+            <div className="bg-white p-3 rounded-sm border border-[#E8E4DE] shadow-sm inline-block max-w-2xl w-full">
+              <Image
+                src="/certificate.png"
+                alt="Olena Pruska — 500-Hour Hatha & Ashtanga Yoga Teacher Training Certificate (Adhiroha, Rishikesh)"
+                width={1491}
+                height={1055}
+                className="w-full h-auto rounded-sm"
+              />
+            </div>
+            <p className="text-sm text-[#1A1A18]/50 mt-4">
+              Hatha &amp; Ashtanga Yoga Teacher Training, 500 Hour Level — Adhiroha, Rishikesh, India · 2024
+            </p>
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="relative py-28 md:py-36 overflow-hidden bg-[#FAFAF8]">
           {/* Background video at low opacity */}
@@ -157,10 +179,10 @@ export default function AboutPage() {
               Ready to begin your journey?
             </h2>
             <Link
-              href="/schedule"
+              href="/contact"
               className="inline-block bg-[#1A1A18] text-[#FAFAF8] px-8 py-4 text-sm font-medium rounded-sm hover:bg-[#7BA7BC] transition-colors"
             >
-              Join Me on the Mat
+              Get in Touch
             </Link>
           </div>
         </section>

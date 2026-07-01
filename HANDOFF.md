@@ -4,24 +4,31 @@
 > Audience: a developer/agent picking this up cold. Covers what the project is, how to run it,
 > the architecture, and a complete chronological log of every change made in the work session.
 >
-> **Concept note:** the project began as a *beach yoga* site and was later repositioned to a
-> **general yoga teacher** site focused on classes, private sessions, retreats, and collaborations
-> (see §8.15–§8.16). "Huntington Beach" now appears only as her location, not as a theme.
+> **Concept note (read this first):** the project began as a *beach yoga booking* site and was
+> progressively repositioned. In order: the beach theme was dropped and pricing removed
+> (§8.15–§8.16); then the **class Schedule + the whole booking flow were removed** (§8.18); then the
+> admin was **trimmed to just Contact Messages + Business Inquiries** (§8.19). It is now a
+> **general yoga-teacher portfolio + company-contact** site. "Huntington Beach" appears only as her
+> location. Later the site was shared with Olena via a **Cloudflare tunnel** (§8.20) and the class-card
+> photos were swapped for new ones (§8.21).
 
-Last updated: 2026-06-20
+Last updated: 2026-07-01
 
 ---
 
 ## 1. What this is
 
-A marketing + lightweight booking site for a yoga teacher (Olena Pruska). It has:
+A **portfolio + company-contact** site for a yoga teacher (Olena Pruska). (It started as a booking
+site; the schedule/booking side has since been removed — see §8.18–§8.19.) It has:
 
-- A **public client site** — home, schedule, about, contact, plan-request pages, and a
-  business "Make an Inquiry" page.
-- A **password-protected admin panel** at `/admin` with **five tabs**: Bookings, Schedule,
-  Requests, Messages, Inquiries.
-- A **SQLite database** (via Prisma) storing classes, bookings, plan requests, contact messages,
-  and business inquiries.
+- A **public client site** — home, about, contact, and a business "Make an Inquiry" page.
+  (The public **Schedule page was deleted** (§8.18); `/schedule` now 404s.)
+- A **password-protected admin panel** at `/admin` with **two tabs**: **Messages** (contact-form
+  submissions) and **Inquiries** (business/partnership requests). (Bookings/Schedule/Requests tabs
+  were removed — §8.18–§8.19.)
+- A **SQLite database** (via Prisma). Only **`ContactMessage`** and **`BusinessInquiry`** are
+  actively used. The older `YogaClass` / `Booking` / `PlanRequest` models still exist but are
+  **orphaned** — nothing in the UI reads or writes them.
 
 ### Tech stack
 
@@ -120,28 +127,27 @@ src/
   app/
     layout.tsx             # root layout; loads Cormorant + DM Sans (normal+italic, display:swap)
     globals.css            # Tailwind import, theme vars, animations, font smoothing/rendering
-    page.tsx               # HOME (client) — hero VIDEO, About strip, classes (click→modal),
-                           #   What to Bring (gradient), pricing, testimonials, CTA
-    about/page.tsx         # About (bio, stats, timeline, certs, CTA with background VIDEO)
-    schedule/page.tsx      # Schedule (server component, reads DB), grouped by day → ClassCard
+    page.tsx               # HOME (client) — hero VIDEO, About strip, classes (click→modal, CTA→/contact),
+                           #   What to Bring (gradient), testimonials, CTA. (Pricing removed §8.15.)
+    about/page.tsx         # About (bio, stats, timeline, certs, CTA with background VIDEO → /contact)
     contact/page.tsx       # Contact (client) — name/email/PHONE/message → POST /api/messages
     inquiries/page.tsx     # "Make an Inquiry" (client) — dual CTA + 7-field business form
-    request/[plan]/page.tsx# Plan request form ("By Invitation") + Back button — 2 valid slugs
-    admin/page.tsx         # Admin dashboard (client) — login + 5 tabs
+    request/[plan]/page.tsx# Plan request form — ORPHANED (no links since §8.15). 2 valid slugs.
+    admin/page.tsx         # Admin dashboard (client) — login + 2 tabs (Messages, Inquiries)
+    # DELETED §8.18: schedule/page.tsx  → /schedule now 404s
     api/
       admin/login/route.ts   # POST: rate-limited password check, set session cookie
       admin/logout/route.ts  # POST: clear session cookie
       admin/session/route.ts # GET: { authenticated: boolean }
-      bookings/route.ts      # GET(admin) / POST(public, validated+rate-limited) / DELETE(admin)
-      classes/route.ts       # GET(admin) / POST(admin) / DELETE(admin)
-      requests/route.ts      # GET(admin) / POST(public, validated+rate-limited) / DELETE(admin)
-      messages/route.ts      # GET(admin) / POST(public, validated+rate-limited) / DELETE(admin)
-      inquiries/route.ts     # GET(admin) / POST(public, validated+rate-limited) / DELETE(admin)
+      messages/route.ts      # GET(admin) / POST(public, validated+rate-limited) / DELETE(admin)  [ACTIVE]
+      inquiries/route.ts     # GET(admin) / POST(public, validated+rate-limited) / DELETE(admin)  [ACTIVE]
+      bookings/route.ts      # ORPHANED (§8.18–8.19) — routes exist, no UI caller
+      classes/route.ts       # ORPHANED (§8.18) — routes exist, no UI caller
+      requests/route.ts      # ORPHANED (§8.15,8.19) — routes exist, no UI caller
   components/
-    Navbar.tsx             # fixed nav; `overlay` prop = white-on-dark hero; links incl. Make an Inquiry
-    Footer.tsx             # nav links (incl. Make an Inquiry) + Instagram link
-    ClassCard.tsx          # schedule class card (opens BookingModal)
-    BookingModal.tsx       # booking form modal — all fields required → POST /api/bookings
+    Navbar.tsx             # fixed nav; `overlay` prop = white-on-dark hero; links: Home/About/Contact/Make an Inquiry + "Get in Touch"
+    Footer.tsx             # nav links + Instagram link
+    # DELETED §8.18: ClassCard.tsx, BookingModal.tsx
   lib/
     auth.ts                # HMAC-signed cookie session, password verify, requireAdmin()
     prisma.ts              # singleton PrismaClient w/ libSQL adapter
@@ -150,7 +156,7 @@ src/
 public/
   hero.mp4, hero-poster.jpg              # home hero background video (from "video 1.mov")
   about-cta.mp4, about-cta-poster.jpg    # about CTA background video (from "video 2.MP4")
-  classes/                               # vinyasa.jpg, hatha.jpg, yin-yoga.jpg, yoga-sculpt.jpg
+  classes/                               # vinyasa/hatha/yin-yoga/yoga-sculpt.jpg (photos replaced §8.21)
   lenaproject/                           # lena1/2/3.JPG (about page etc.) — ~13–14 MB each
 ```
 
@@ -220,8 +226,13 @@ model BusinessInquiry {       // NEW (8.10) — resort/retreat/private inquiries
 }
 ```
 
+- ⚠️ **`YogaClass` / `Booking` / `PlanRequest` are now ORPHANED** (§8.18–8.19): the Schedule page,
+  booking modal, and the admin Bookings/Schedule/Requests tabs that used them were removed. The models,
+  the seed, and their API routes still exist, but **nothing in the UI touches them**. Only
+  `ContactMessage` and `BusinessInquiry` are actively read/written. (These models could be deleted in a
+  future cleanup — see §9.)
 - Seed (`prisma/seed.ts`) inserts 12 classes (Hatha / Yin Yoga / Hot Vinyasa / Yoga Sculpt) across
-  the upcoming Mon–Sat with beach locations, `maxSpots: 10`.
+  the upcoming Mon–Sat, `maxSpots: 10`. (Now only relevant to the orphaned models above.)
 - **Migration drift:** the DB was originally created via `db push`, so the `migrations/` history does
   not match the live DB. `ContactMessage` and `BusinessInquiry` were added with `npx prisma db push`
   (non-destructive) — **not** `migrate dev` (which would reset/wipe). Keep using `db push` for schema
@@ -239,10 +250,14 @@ model BusinessInquiry {       // NEW (8.10) — resort/retreat/private inquiries
 - `isAdminAuthenticated()` reads/verifies the cookie; `requireAdmin()` returns a 401 `NextResponse`
   or `null` (gates admin routes). `AUTH_SECRET` must be ≥ 32 chars or the lib throws.
 
-**Authorization map**
+**Authorization map** (all routes still gated the same way; some are now orphaned)
 - **Admin-gated** (`requireAdmin()`): `GET`/`DELETE` on bookings, requests, messages, inquiries;
-  `GET`/`POST`/`DELETE` on classes. Unauthenticated → **401**.
-- **Public POST** (customer write paths): bookings, requests, messages, inquiries.
+  `GET`/`POST`/`DELETE` on classes. Unauthenticated → **401**. The admin UI now only calls
+  `GET /api/messages` and `GET /api/inquiries` (§8.19); bookings/classes/requests GET/DELETE are
+  orphaned but still gated.
+- **Public POST** (customer write paths): **messages, inquiries** are live (contact form, inquiry
+  form). **bookings, requests** POST endpoints still exist and remain validated + rate-limited, but
+  their UIs were removed (§8.18) so nothing calls them.
 
 **Rate limiting** (`src/lib/rate-limit.ts`) — in-memory sliding window keyed by client IP
 (`x-forwarded-for` → `x-real-ip` → `'local'`):
@@ -265,18 +280,18 @@ model BusinessInquiry {       // NEW (8.10) — resort/retreat/private inquiries
 
 | Path | Type | Notes |
 |---|---|---|
-| `/` | client | Home — full-bleed hero **video**, About strip, classes (click → detail modal), What to Bring (gradient), testimonials, CTA. (Pricing section removed in §8.15.) |
-| `/schedule` | server | Upcoming classes (DB, `date >= today`) grouped by day; cards open `BookingModal` |
-| `/about` | server | Bio, stats, experience timeline, certs/languages, **CTA with background video** |
+| `/` | client | Home — full-bleed hero **video**, About strip, classes (click → detail modal, CTA "Get in Touch" → `/contact`), What to Bring (gradient), testimonials, CTA → `/contact`. (Pricing removed §8.15.) |
+| `/schedule` | — | **DELETED (§8.18) → 404.** Was the class schedule + booking. |
+| `/about` | server | Bio, stats, experience timeline, certs/languages, CTA (background video) → `/contact` |
 | `/contact` | client | Name / Email / **Phone** / Message → `POST /api/messages` (all required) |
-| `/inquiries` | client | "Make an Inquiry" — dual CTA + 7-field business form → `POST /api/inquiries` |
-| `/request/3-class-pack` | client | "By Invitation" plan form + **Back** button → `POST /api/requests` |
-| `/request/monthly-unlimited` | client | "By Invitation" plan form + **Back** button |
-| `/request/<other>` | — | `notFound()` → 404 (only the two slugs are valid) |
-| `/admin` | client | Login gate → tabs: **Bookings** (CSV export), **Schedule** (add/delete), **Requests**, **Messages**, **Inquiries** |
+| `/inquiries` | client | "Make an Inquiry" — dual CTA ("Get in Touch"→`/contact`, "Make an Inquiry"→form) + 7-field form → `POST /api/inquiries` |
+| `/request/3-class-pack`, `/request/monthly-unlimited` | client | Plan forms + Back button — **ORPHANED** (no links since §8.15) but still resolve if visited directly |
+| `/request/<other>` | — | `notFound()` → 404 |
+| `/admin` | client | Login gate → **2 tabs: Messages, Inquiries** (Bookings/Schedule/Requests removed §8.18–8.19) |
 
-> Note: the `/request/*` pages still exist and work if reached directly, but **nothing links to them
-> anymore** since the home Pricing section (which held the "Book Now" links) was removed in §8.15.
+> Nav/Footer links are now: Home · About · Contact · Make an Inquiry, plus a "Get in Touch" button
+> (→ `/contact`). Every former schedule/booking CTA ("Book a Class", "View Schedule", "Reserve Your
+> Spot", "Join Me on the Mat", "Book a Session") was repointed to `/contact` (§8.18).
 
 ---
 
@@ -486,6 +501,95 @@ remains as a place name only.
   password → 401, new → 200, verified). The literal value is intentionally **not stored in this
   committed doc**; it lives only in the git-ignored `.env`. (Existing sessions stay valid because they
   are signed by `AUTH_SECRET`, which was unchanged.)
+- The §8.15–§8.17 changes were committed + pushed to `main` (commits `fe76ffb`, then HANDOFF doc
+  update `5b0d32e`).
+
+### 8.17b Operational / Q&A turns (no code changes)
+- Several "run the project" turns (started/confirmed the dev server on localhost; port landed on
+  3000 once the stale process was gone).
+- Answered "if someone clones the repo, do they see the same thing?" → yes for code + `public/`
+  assets, but they must supply `.env`, run `db push` + `seed`, and won't inherit the local DB data.
+- "Show me the admin panel" → rendered a faithful HTML mockup from live data (screenshots time out).
+
+### 8.18 Remove the Schedule page + booking flow
+**Intent:** "Olena doesn't want schedule anymore — site should be portfolio + company contact only."
+- **Deleted files:** `src/app/schedule/page.tsx` (→ `/schedule` now 404), `src/components/ClassCard.tsx`,
+  `src/components/BookingModal.tsx` (both only used by the schedule page).
+- **`src/components/Navbar.tsx`:** removed the "Schedule" link; relabeled the "Book a Class" button →
+  **"Get in Touch"** → `/contact`.
+- **`src/components/Footer.tsx`:** removed the "Schedule" link.
+- **Repointed every schedule/booking CTA → `/contact`, relabeled "Get in Touch":** home hero
+  ("View Schedule"), home CTA banner ("See This Week's Schedule" → button "Get in Touch", heading
+  "Let's work together"), class-detail modal ("Reserve Your Spot"), About CTA ("Join Me on the Mat"),
+  Inquiries "Book a Session".
+- **`src/app/admin/page.tsx`:** removed the **Schedule** tab, its "Class Schedule" panel, the
+  "Add New Class" modal, and all related state/handlers (`classes`, `YogaClass` interface,
+  `handleAddClass`, `handleDeleteClass`, `showAddClass`/`newClass`, the `/api/classes` fetch, unused
+  `X`/`Plus` icons).
+- **Verify:** `tsc` + `eslint` clean; no leftover `/schedule` links/symbols; `/schedule` → 404; other
+  pages 200; home has no Schedule nav text and no `/schedule` hrefs; admin renders remaining tabs.
+  (Cleared `.next` + restarted since a route/page was deleted.)
+
+### 8.19 Trim admin → Messages + Inquiries only
+**Intent:** "Also delete Bookings and Requests from the admin panel."
+- **`src/app/admin/page.tsx`:** removed the **Bookings** tab (table + CSV export) and **Requests** tab,
+  plus all supporting code — `Booking` & `PlanRequest` interfaces, `PLAN_LABEL`, `bookings`/`requests`
+  state, their `/api/bookings` + `/api/requests` fetches, `handleDeleteBooking`, `handleDeleteRequest`,
+  `exportToCSV`, and the now-unused `Download` icon. Default tab is now **Messages**.
+- Panels were spliced out with a small node script (unique-marker `indexOf`) to avoid
+  whitespace-matching errors on the large JSX block.
+- **Verify:** `tsc` + `eslint` clean; admin → 200; tabs = **Messages / Inquiries** only; both panels
+  render; no console/server errors (earlier `setBookings`-undefined errors were stale HMR noise during
+  the multi-step edit — confirmed gone after `rm -rf .next` + restart).
+- **Result:** the `/api/bookings`, `/api/classes`, `/api/requests` routes and the `/request/[plan]`
+  pages are now fully orphaned (see §9 for optional deletion).
+
+### 8.20 Share with Olena via a Cloudflare tunnel (Option B)
+**Intent:** "How can Olena check the project from her computer?" → chose a temporary public link.
+- Presented 3 options: (A) same-Wi-Fi Network URL, (B) Cloudflare quick tunnel, (C) real deploy to
+  Vercel + hosted DB (Turso/Neon) — since SQLite doesn't run on serverless. User chose **B**.
+- Installed **cloudflared** (`winget install Cloudflare.cloudflared`) → `C:\Program Files (x86)\cloudflared\cloudflared.exe`.
+- Started the dev server + ran `cloudflared tunnel --url http://localhost:3000` → public URL
+  `https://<random>.trycloudflare.com`. Verified home/about/admin 200 through the tunnel; admin login
+  works remotely. Gave the client link and the `/admin` link + password to send Olena.
+- ⚠️ Caveats communicated: the PC must stay on with **both** the dev server and tunnel running; the
+  URL is random/temporary and changes on restart; it's a dev build; the link is public (only the admin
+  is password-gated). For persistence beyond a Claude session, the user should run the two commands in
+  their own terminals. (These processes are session-scoped and were torn down/restarted across a
+  session reconnect during this work.)
+
+### 8.21 Replace the class-card photos
+**Intent:** "I put new photos in the project — replace them by name."
+- User added 4 new photos to the repo root (named by class). Viewed each to confirm upright/valid, then
+  copied over the existing files (same URLs, so no code change):
+  `photo vinyasa.jpg`→`public/classes/vinyasa.jpg`, `photo hatha.jpg`→`hatha.jpg`,
+  `photoYinYan.jpg`→`yin-yoga.jpg`, `photoYoga Sculpt.jpg`→`yoga-sculpt.jpg`.
+- Added `/photo*.jpg` + `/photo*.jpeg` to `.gitignore` (raw sources stay local; used copies live in
+  `public/classes/`).
+- **Verify:** all four `/classes/*.jpg` serve 200 with the new byte sizes. (User said "three"; there
+  were four matching files — replaced all four.) Note: filenames are unchanged, so a browser hard
+  refresh (Ctrl+F5) may be needed to bust cache.
+
+### 8.21b Swap Hatha ↔ Yin Yoga photos
+- Swapped the two files in `public/classes/` (`hatha.jpg` ↔ `yin-yoga.jpg`) at the user's request so
+  each card shows the other's image. No code change (same URLs). Verified both serve 200 with swapped
+  byte sizes.
+
+### 8.22 Add Olena's certificate to the About page
+**Intent:** "I added Olena's certificate — put it on the site, around the Experience/Certifications area."
+- **Asset:** `certificate.png` (1491×1055) copied to `public/certificate.png`. It's the Adhiroha
+  "Hatha & Ashtanga Yoga Teacher Training, 500 Hour Level" certificate awarded to Olena Pruska
+  (Rishikesh, India, 2024).
+- **`src/app/about/page.tsx`:** added a new **"500-Hour Certification"** section (label "Credential" +
+  serif heading) right after the Certifications & Languages section and before the CTA. Shows the
+  certificate via `next/image` (width 1491 / height 1055, `w-full h-auto`) in a white framed card
+  (border + subtle shadow), with a caption line. Uses the already-imported `Image`.
+- `.gitignore`: added `/certificate.png` (root source stays local; the used copy is `public/certificate.png`).
+- **Verify:** `/about` 200; `/certificate.png` 200; the "500-Hour Certification" heading + image
+  reference render on the page.
+
+> Committed + pushed in the commit that also carried §8.18–§8.22 (schedule/booking removal, admin trim,
+> new class photos, Hatha/Yin swap, certificate). This HANDOFF update is part of that commit.
 
 ---
 
@@ -494,10 +598,13 @@ remains as a place name only.
 1. **Admin password** has been set to a real value in `.env` (§8.17) — no longer the `admin` default.
    It exists only in the local `.env`; for any hosted deploy, set `ADMIN_PASSWORD` (and `AUTH_SECRET`)
    in that environment too. `AUTH_SECRET` is already strong; rotating it invalidates existing sessions.
-2. **Untracked source media in repo root** (not git-ignored): `video 1.mov`, `video 2.MP4`, and the
-   `a_*.jpeg` / `b_*.jpeg` source photos. Optimized versions live in `public/`. Recommend moving the
-   raw sources out or adding them to `.gitignore` so only `public/` assets get committed. Also a stray
-   `public/lenaproject/New Microsoft Word Document.docx`.
+2. **Orphaned schedule/booking code (candidate for deletion).** After §8.18–8.19, these exist but are
+   never used: API routes `api/bookings`, `api/classes`, `api/requests`; pages `request/[plan]`; and
+   the Prisma models `YogaClass` / `Booking` / `PlanRequest` (+ `prisma/seed.ts`). Safe to remove for a
+   truly minimal codebase — left in place because the user only asked to remove the UI so far.
+3. **Raw source media in repo root** is now git-ignored via patterns `/video*.{mov,MP4}`,
+   `/a_*.jpeg`, `/b_*.jpeg`, `/photo*.jpg`, `/photo*.jpeg` (optimized versions live in `public/`).
+   Still tracked historically: a stray `public/lenaproject/New Microsoft Word Document.docx`.
 3. **Large unoptimized images:** `public/lenaproject/lena*.JPG` are ~13–14 MB each
    (`next.config.ts` has `images.unoptimized: true`). Slow to load; also break the preview screenshot
    tool. Consider compressing/resizing.
@@ -520,31 +627,35 @@ remains as a place name only.
 ## 10. Quick verification cheatsheet
 
 ```bash
-PORT=<from launch output>
+PORT=3000   # dev server port (autoPort may pick another if 3000 is busy)
 
-# public + admin routes
-for p in / /schedule /about /contact /inquiries /admin \
-         /request/3-class-pack /request/monthly-unlimited; do
+# live routes (expect 200; /schedule now 404)
+for p in / /about /contact /inquiries /admin; do
   curl -s -o /dev/null -w "$p -> %{http_code}\n" "http://localhost:$PORT$p"; done
+curl -s -o /dev/null -w "/schedule -> %{http_code} (expect 404)\n" "http://localhost:$PORT/schedule"
 
 # security headers
 curl -s -D - -o /dev/null "http://localhost:$PORT/admin" | grep -iE "x-frame|x-content|referrer|permissions-policy|strict-transport"
 
-# admin login + gated data
+# admin login + gated data (password is in .env, not here)
 J=/tmp/c.txt
-curl -s -c $J -X POST "http://localhost:$PORT/api/admin/login" -H 'Content-Type: application/json' -d '{"password":"admin"}'
-for e in bookings classes requests messages inquiries; do
+curl -s -c $J -X POST "http://localhost:$PORT/api/admin/login" -H 'Content-Type: application/json' -d '{"password":"<ADMIN_PASSWORD>"}'
+for e in messages inquiries; do
   echo "$e -> $(curl -s -b $J -o /dev/null -w '%{http_code}' http://localhost:$PORT/api/$e)"; done
 
-# db counts (all 5 models)
+# db counts (active models)
 node -e "const{PrismaClient}=require('@prisma/client');const{PrismaLibSql}=require('@prisma/adapter-libsql');\
 const p=new PrismaClient({adapter:new PrismaLibSql({url:'file:./prisma/dev.db'})});\
-Promise.all([p.yogaClass.count(),p.booking.count(),p.planRequest.count(),p.contactMessage.count(),p.businessInquiry.count()])\
-.then(r=>{console.log('classes,bookings,requests,messages,inquiries =',r);process.exit(0)})"
+Promise.all([p.contactMessage.count(),p.businessInquiry.count()])\
+.then(r=>{console.log('messages,inquiries =',r);process.exit(0)})"
+
+# share with Olena (Option B, §8.20) — two terminals, keep both open:
+#   1) npm run dev
+#   2) & "C:\Program Files (x86)\cloudflared\cloudflared.exe" tunnel --url http://localhost:3000
 ```
 
-- Admin login: open `/admin`, enter `ADMIN_PASSWORD` (dev: `admin`). Tabs: Bookings / Schedule /
-  Requests / Messages / Inquiries.
-- **Live data snapshot at last check (2026-06-20):** classes 12, bookings 1, requests 4, messages 1,
-  inquiries 1 (all real submissions; counts change as people use the site).
+- Admin login: open `/admin`, enter `ADMIN_PASSWORD` (value is in the local `.env`). Tabs:
+  **Messages / Inquiries**.
+- **Live data snapshot (as data existed during this session):** messages and business inquiries are
+  the active tables; counts change as people submit the contact + inquiry forms.
 ```

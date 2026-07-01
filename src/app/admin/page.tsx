@@ -1,49 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { X, Download, Plus, Trash2, LogOut } from 'lucide-react'
-
-interface Booking {
-  id: string
-  firstName: string
-  lastName: string
-  email: string
-  phone: string | null
-  createdAt: string
-  yogaClass: {
-    dayOfWeek: string
-    date: string
-    time: string
-    type: string
-    location: string
-  }
-}
-
-interface YogaClass {
-  id: string
-  dayOfWeek: string
-  date: string
-  time: string
-  type: string
-  duration: number
-  location: string
-  maxSpots: number
-  _count: {
-    bookings: number
-  }
-}
-
-interface PlanRequest {
-  id: string
-  plan: string
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  comment: string | null
-  status: string
-  createdAt: string
-}
+import { Trash2, LogOut } from 'lucide-react'
 
 interface ContactMessage {
   id: string
@@ -68,75 +26,25 @@ interface BusinessInquiry {
   createdAt: string
 }
 
-const PLAN_LABEL: Record<string, string> = {
-  '3-class-pack': '3-Class Pack',
-  'monthly-unlimited': 'Monthly Unlimited',
-}
-
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [activeTab, setActiveTab] = useState<'bookings' | 'schedule' | 'requests' | 'messages' | 'inquiries'>('bookings')
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [classes, setClasses] = useState<YogaClass[]>([])
-  const [requests, setRequests] = useState<PlanRequest[]>([])
+  const [activeTab, setActiveTab] = useState<'messages' | 'inquiries'>('messages')
   const [messages, setMessages] = useState<ContactMessage[]>([])
   const [inquiries, setInquiries] = useState<BusinessInquiry[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [showAddClass, setShowAddClass] = useState(false)
-  const [newClass, setNewClass] = useState<{
-    dayOfWeek: string
-    date: string
-    time: string
-    type: string
-    duration: number | ''
-    location: string
-    maxSpots: number | ''
-  }>({
-    dayOfWeek: 'Monday',
-    date: '',
-    time: '',
-    type: 'Vinyasa',
-    duration: 60,
-    location: '',
-    maxSpots: 10,
-  })
 
   const fetchData = useCallback(async () => {
     try {
-      const [bookingsRes, classesRes, requestsRes, messagesRes, inquiriesRes] = await Promise.all([
-        fetch('/api/bookings'),
-        fetch('/api/classes'),
-        fetch('/api/requests'),
+      const [messagesRes, inquiriesRes] = await Promise.all([
         fetch('/api/messages'),
         fetch('/api/inquiries'),
       ])
 
-      if (
-        bookingsRes.status === 401 ||
-        classesRes.status === 401 ||
-        requestsRes.status === 401 ||
-        messagesRes.status === 401 ||
-        inquiriesRes.status === 401
-      ) {
+      if (messagesRes.status === 401 || inquiriesRes.status === 401) {
         setIsAuthenticated(false)
         return
-      }
-
-      if (bookingsRes.ok) {
-        const bookingsData = await bookingsRes.json()
-        setBookings(bookingsData)
-      }
-
-      if (classesRes.ok) {
-        const classesData = await classesRes.json()
-        setClasses(classesData)
-      }
-
-      if (requestsRes.ok) {
-        const requestsData = await requestsRes.json()
-        setRequests(requestsData)
       }
 
       if (messagesRes.ok) {
@@ -174,18 +82,6 @@ export default function AdminPage() {
       cancelled = true
     }
   }, [fetchData])
-
-  const handleDeleteRequest = async (id: string) => {
-    if (!confirm('Delete this request?')) return
-    try {
-      const response = await fetch(`/api/requests?id=${id}`, { method: 'DELETE' })
-      if (response.ok) {
-        setRequests(requests.filter(r => r.id !== id))
-      }
-    } catch (error) {
-      console.error('Error deleting request:', error)
-    }
-  }
 
   const handleDeleteMessage = async (id: string) => {
     if (!confirm('Delete this message?')) return
@@ -241,89 +137,8 @@ export default function AdminPage() {
     }
     setIsAuthenticated(false)
     setPassword('')
-    setBookings([])
-    setClasses([])
-    setRequests([])
     setMessages([])
     setInquiries([])
-  }
-
-  const handleDeleteBooking = async (id: string) => {
-    if (!confirm('Are you sure you want to cancel this booking?')) return
-    
-    try {
-      const response = await fetch(`/api/bookings?id=${id}`, { method: 'DELETE' })
-      if (response.ok) {
-        setBookings(bookings.filter(b => b.id !== id))
-      }
-    } catch (error) {
-      console.error('Error deleting booking:', error)
-    }
-  }
-
-  const handleDeleteClass = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this class?')) return
-    
-    try {
-      const response = await fetch(`/api/classes?id=${id}`, { method: 'DELETE' })
-      if (response.ok) {
-        setClasses(classes.filter(c => c.id !== id))
-      }
-    } catch (error) {
-      console.error('Error deleting class:', error)
-    }
-  }
-
-  const handleAddClass = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    try {
-      const response = await fetch('/api/classes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newClass),
-      })
-      
-      if (response.ok) {
-        const createdClass = await response.json()
-        setClasses([...classes, { ...createdClass, _count: { bookings: 0 } }])
-        setShowAddClass(false)
-        setNewClass({
-          dayOfWeek: 'Monday',
-          date: '',
-          time: '',
-          type: 'Vinyasa',
-          duration: 60,
-          location: '',
-          maxSpots: 10,
-        })
-      }
-    } catch (error) {
-      console.error('Error adding class:', error)
-    }
-  }
-
-  const exportToCSV = () => {
-    const headers = ['Name', 'Email', 'Phone', 'Class Type', 'Day', 'Date', 'Time', 'Location', 'Booked At']
-    const rows = bookings.map(b => [
-      `${b.firstName} ${b.lastName}`,
-      b.email,
-      b.phone || '',
-      b.yogaClass.type,
-      b.yogaClass.dayOfWeek,
-      new Date(b.yogaClass.date).toLocaleDateString(),
-      b.yogaClass.time,
-      b.yogaClass.location,
-      new Date(b.createdAt).toLocaleString(),
-    ])
-    
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `bookings-${new Date().toISOString().split('T')[0]}.csv`
-    a.click()
   }
 
   if (!isAuthenticated) {
@@ -377,36 +192,6 @@ export default function AdminPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex gap-8">
             <button
-              onClick={() => setActiveTab('bookings')}
-              className={`py-4 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'bookings'
-                  ? 'border-[#7BA7BC] text-[#7BA7BC]'
-                  : 'border-transparent text-[#1A1A18]/60 hover:text-[#1A1A18]'
-              }`}
-            >
-              Bookings ({bookings.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('schedule')}
-              className={`py-4 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'schedule'
-                  ? 'border-[#7BA7BC] text-[#7BA7BC]'
-                  : 'border-transparent text-[#1A1A18]/60 hover:text-[#1A1A18]'
-              }`}
-            >
-              Schedule ({classes.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('requests')}
-              className={`py-4 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'requests'
-                  ? 'border-[#7BA7BC] text-[#7BA7BC]'
-                  : 'border-transparent text-[#1A1A18]/60 hover:text-[#1A1A18]'
-              }`}
-            >
-              Requests ({requests.length})
-            </button>
-            <button
               onClick={() => setActiveTab('messages')}
               className={`py-4 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'messages'
@@ -434,171 +219,6 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
         {isLoading ? (
           <p className="text-center text-[#1A1A18]/60 py-12">Loading...</p>
-        ) : activeTab === 'bookings' ? (
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="font-serif text-xl text-[#1A1A18]">All Bookings</h2>
-              <button
-                onClick={exportToCSV}
-                className="flex items-center gap-2 bg-[#1A1A18] text-[#FAFAF8] px-4 py-2 text-sm rounded-sm hover:bg-[#7BA7BC] transition-colors"
-              >
-                <Download size={16} />
-                Export to CSV
-              </button>
-            </div>
-            
-            {bookings.length === 0 ? (
-              <p className="text-center text-[#1A1A18]/60 py-12">No bookings yet.</p>
-            ) : (
-              <div className="bg-white rounded-sm border border-[#E8E4DE] overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-[#FAFAF8] border-b border-[#E8E4DE]">
-                    <tr>
-                      <th className="text-left px-4 py-3 text-sm font-medium text-[#1A1A18]">Name</th>
-                      <th className="text-left px-4 py-3 text-sm font-medium text-[#1A1A18]">Email</th>
-                      <th className="text-left px-4 py-3 text-sm font-medium text-[#1A1A18]">Class</th>
-                      <th className="text-left px-4 py-3 text-sm font-medium text-[#1A1A18]">Date & Time</th>
-                      <th className="text-left px-4 py-3 text-sm font-medium text-[#1A1A18]">Booked</th>
-                      <th className="text-left px-4 py-3 text-sm font-medium text-[#1A1A18]">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {bookings.map((booking) => (
-                      <tr key={booking.id} className="border-b border-[#E8E4DE] last:border-0">
-                        <td className="px-4 py-3 text-sm">
-                          {booking.firstName} {booking.lastName}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-[#1A1A18]/60">{booking.email}</td>
-                        <td className="px-4 py-3 text-sm">
-                          <span className="font-medium">{booking.yogaClass.type}</span>
-                          <br />
-                          <span className="text-xs text-[#1A1A18]/50">{booking.yogaClass.location}</span>
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          {booking.yogaClass.dayOfWeek}, {new Date(booking.yogaClass.date).toLocaleDateString()}
-                          <br />
-                          <span className="text-xs text-[#1A1A18]/50">{booking.yogaClass.time}</span>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-[#1A1A18]/60">
-                          {new Date(booking.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="px-4 py-3">
-                          <button
-                            onClick={() => handleDeleteBooking(booking.id)}
-                            className="text-red-500 hover:text-red-700 transition-colors"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        ) : activeTab === 'schedule' ? (
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="font-serif text-xl text-[#1A1A18]">Class Schedule</h2>
-              <button
-                onClick={() => setShowAddClass(true)}
-                className="flex items-center gap-2 bg-[#7BA7BC] text-white px-4 py-2 text-sm rounded-sm hover:bg-[#1A1A18] transition-colors"
-              >
-                <Plus size={16} />
-                Add New Class
-              </button>
-            </div>
-
-            {classes.length === 0 ? (
-              <p className="text-center text-[#1A1A18]/60 py-12">No classes scheduled.</p>
-            ) : (
-              <div className="space-y-4">
-                {classes.map((cls) => (
-                  <div key={cls.id} className="bg-white rounded-sm border border-[#E8E4DE] p-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="text-xs uppercase tracking-wider text-[#7BA7BC] font-medium">
-                            {cls.dayOfWeek}
-                          </span>
-                          <span className="text-xs px-2 py-1 bg-[#7BA7BC]/10 text-[#7BA7BC] rounded-full">
-                            {cls.type}
-                          </span>
-                        </div>
-                        <h3 className="font-medium text-[#1A1A18]">{cls.time}</h3>
-                        <p className="text-sm text-[#1A1A18]/60">{cls.duration} min • {cls.location}</p>
-                        <p className="text-sm text-[#1A1A18]/60 mt-1">
-                          {cls._count.bookings} / {cls.maxSpots} spots booked
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleDeleteClass(cls.id)}
-                        className="text-red-500 hover:text-red-700 transition-colors"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ) : activeTab === 'requests' ? (
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="font-serif text-xl text-[#1A1A18]">Plan Requests</h2>
-            </div>
-
-            {requests.length === 0 ? (
-              <p className="text-center text-[#1A1A18]/60 py-12">No requests yet.</p>
-            ) : (
-              <div className="space-y-4">
-                {requests.map((req) => (
-                  <div key={req.id} className="bg-white rounded-sm border border-[#E8E4DE] p-5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2 flex-wrap">
-                          <span className="text-xs uppercase tracking-wider text-[#7BA7BC] font-medium">
-                            {PLAN_LABEL[req.plan] || req.plan}
-                          </span>
-                          <span className="text-xs text-[#1A1A18]/40">
-                            {new Date(req.createdAt).toLocaleString()}
-                          </span>
-                        </div>
-                        <h3 className="font-medium text-[#1A1A18]">
-                          {req.firstName} {req.lastName}
-                        </h3>
-                        <div className="text-sm text-[#1A1A18]/70 mt-1 space-y-0.5">
-                          <p>
-                            <a href={`mailto:${req.email}`} className="hover:text-[#7BA7BC] transition-colors">
-                              {req.email}
-                            </a>
-                          </p>
-                          <p>
-                            <a href={`tel:${req.phone}`} className="hover:text-[#7BA7BC] transition-colors">
-                              {req.phone}
-                            </a>
-                          </p>
-                        </div>
-                        {req.comment && (
-                          <p className="text-sm text-[#1A1A18]/80 mt-3 p-3 bg-[#FAFAF8] border-l-2 border-[#7BA7BC] italic">
-                            {req.comment}
-                          </p>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => handleDeleteRequest(req.id)}
-                        className="text-red-500 hover:text-red-700 transition-colors shrink-0"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         ) : activeTab === 'messages' ? (
           <div>
             <div className="flex justify-between items-center mb-6">
@@ -707,122 +327,6 @@ export default function AdminPage() {
           </div>
         )}
       </div>
-
-      {/* Add Class Modal */}
-      {showAddClass && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-sm max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="font-serif text-xl text-[#1A1A18]">Add New Class</h2>
-                <button
-                  onClick={() => setShowAddClass(false)}
-                  className="text-[#1A1A18]/60 hover:text-[#1A1A18]"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-              
-              <form onSubmit={handleAddClass} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-[#1A1A18] mb-1.5">Day of Week</label>
-                  <select
-                    value={newClass.dayOfWeek}
-                    onChange={(e) => setNewClass({ ...newClass, dayOfWeek: e.target.value })}
-                    className="w-full px-3 py-2.5 border border-[#E8E4DE] rounded-sm text-sm focus:outline-none focus:border-[#7BA7BC]"
-                  >
-                    {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
-                      <option key={day} value={day}>{day}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-[#1A1A18] mb-1.5">Date</label>
-                  <input
-                    type="date"
-                    required
-                    value={newClass.date}
-                    onChange={(e) => setNewClass({ ...newClass, date: e.target.value })}
-                    className="w-full px-3 py-2.5 border border-[#E8E4DE] rounded-sm text-sm focus:outline-none focus:border-[#7BA7BC]"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-[#1A1A18] mb-1.5">Time</label>
-                  <input
-                    type="time"
-                    required
-                    value={newClass.time}
-                    onChange={(e) => setNewClass({ ...newClass, time: e.target.value })}
-                    className="w-full px-3 py-2.5 border border-[#E8E4DE] rounded-sm text-sm focus:outline-none focus:border-[#7BA7BC]"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-[#1A1A18] mb-1.5">Class Type</label>
-                  <select
-                    value={newClass.type}
-                    onChange={(e) => setNewClass({ ...newClass, type: e.target.value })}
-                    className="w-full px-3 py-2.5 border border-[#E8E4DE] rounded-sm text-sm focus:outline-none focus:border-[#7BA7BC]"
-                  >
-                    <option value="Vinyasa">Vinyasa</option>
-                    <option value="Hot Vinyasa">Hot Vinyasa</option>
-                    <option value="Hatha">Hatha</option>
-                    <option value="Yin Yoga">Yin Yoga</option>
-                    <option value="Yoga Sculpt">Yoga Sculpt</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-[#1A1A18] mb-1.5">Duration (minutes)</label>
-                  <input
-                    type="number"
-                    required
-                    min="30"
-                    max="120"
-                    value={newClass.duration}
-                    onChange={(e) => setNewClass({ ...newClass, duration: e.target.value === '' ? '' : parseInt(e.target.value, 10) })}
-                    className="w-full px-3 py-2.5 border border-[#E8E4DE] rounded-sm text-sm focus:outline-none focus:border-[#7BA7BC]"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-[#1A1A18] mb-1.5">Location</label>
-                  <input
-                    type="text"
-                    required
-                    value={newClass.location}
-                    onChange={(e) => setNewClass({ ...newClass, location: e.target.value })}
-                    placeholder="e.g., Huntington Beach State Beach"
-                    className="w-full px-3 py-2.5 border border-[#E8E4DE] rounded-sm text-sm focus:outline-none focus:border-[#7BA7BC]"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-[#1A1A18] mb-1.5">Max Spots</label>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    max="50"
-                    value={newClass.maxSpots}
-                    onChange={(e) => setNewClass({ ...newClass, maxSpots: e.target.value === '' ? '' : parseInt(e.target.value, 10) })}
-                    className="w-full px-3 py-2.5 border border-[#E8E4DE] rounded-sm text-sm focus:outline-none focus:border-[#7BA7BC]"
-                  />
-                </div>
-                
-                <button
-                  type="submit"
-                  className="w-full bg-[#1A1A18] text-[#FAFAF8] py-3 text-sm font-medium rounded-sm hover:bg-[#7BA7BC] transition-colors"
-                >
-                  Save Class
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

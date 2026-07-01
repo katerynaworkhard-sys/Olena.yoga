@@ -43,9 +43,6 @@ export default function Navbar({ overlay = false }: { overlay?: boolean }) {
             <Link href="/" className={linkClass}>
               Home
             </Link>
-            <Link href="/schedule" className={linkClass}>
-              Schedule
-            </Link>
             <Link href="/about" className={linkClass}>
               About
             </Link>
@@ -58,14 +55,14 @@ export default function Navbar({ overlay = false }: { overlay?: boolean }) {
           </div>
 
           <Link
-            href="/schedule"
+            href="/contact"
             className={`px-5 py-2.5 text-sm font-medium rounded-sm transition-colors ${
               light
                 ? 'bg-white text-[#1A1A18] hover:bg-[#7BA7BC] hover:text-white'
                 : 'bg-[#1A1A18] text-[#FAFAF8] hover:bg-[#7BA7BC]'
             }`}
           >
-            Book a Class
+            Get in Touch
           </Link>
         </div>
       </div>

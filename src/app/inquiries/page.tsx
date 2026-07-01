@@ -77,10 +77,10 @@ export default function InquiriesPage() {
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               <Link
-                href="/schedule"
+                href="/contact"
                 className="inline-block bg-white border border-[#1A1A18] text-[#1A1A18] px-8 py-4 text-sm font-medium rounded-sm hover:bg-[#1A1A18] hover:text-white transition-colors"
               >
-                Book a Session
+                Get in Touch
               </Link>
               <a
                 href="#inquiry-form"
