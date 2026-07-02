@@ -145,7 +145,7 @@ export default function AboutPage() {
             </h2>
             <div className="bg-white p-3 rounded-sm border border-[#E8E4DE] shadow-sm inline-block max-w-2xl w-full">
               <Image
-                src="/certificate.png"
+                src="/certificate.jpg"
                 alt="Olena Pruska — 500-Hour Hatha & Ashtanga Yoga Teacher Training Certificate (Adhiroha, Rishikesh)"
                 width={1491}
                 height={1055}
