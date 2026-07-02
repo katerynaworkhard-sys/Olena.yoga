@@ -9,10 +9,13 @@
 > (§8.15–§8.16); then the **class Schedule + the whole booking flow were removed** (§8.18); then the
 > admin was **trimmed to just Contact Messages + Business Inquiries** (§8.19). It is now a
 > **general yoga-teacher portfolio + company-contact** site. "Huntington Beach" appears only as her
-> location. Later the site was shared with Olena via a **Cloudflare tunnel** (§8.20) and the class-card
-> photos were swapped for new ones (§8.21).
+> location. Later the site was shared with Olena via a **Cloudflare tunnel** (§8.20), the class-card
+> photos were swapped for new ones (§8.21), and Olena's certificate was added (§8.22).
+>
+> **🚀 Current focus: going live.** We are mid-deployment to **Vercel + Turso** (§8.23 = code prep;
+> **§11 = the live deploy runbook + "resume here" checklist**).
 
-Last updated: 2026-07-01
+Last updated: 2026-07-02
 
 ---
 
@@ -588,8 +591,24 @@ remains as a place name only.
 - **Verify:** `/about` 200; `/certificate.png` 200; the "500-Hour Certification" heading + image
   reference render on the page.
 
-> Committed + pushed in the commit that also carried §8.18–§8.22 (schedule/booking removal, admin trim,
-> new class photos, Hatha/Yin swap, certificate). This HANDOFF update is part of that commit.
+> §8.18–§8.22 were committed + pushed as commit `edc1bb3` ("Remove schedule/booking, trim admin, swap
+> class photos, add certificate").
+
+### 8.23 Prepare for production deploy (Vercel + Turso) — commit `1cbcbb3`
+Chose **Vercel** (host) + **Turso** (hosted libSQL database). Full deploy runbook + current progress is
+in **§11**. Code/asset changes made here:
+- **`src/lib/prisma.ts`:** pass `TURSO_AUTH_TOKEN` to the libSQL adapter when set (production). Local
+  `file:` SQLite DB is unchanged (no token needed).
+- **`package.json`:** `build` is now `prisma generate && next build` so Vercel generates the Prisma
+  client during the build (there is no `postinstall`).
+- **Turso DB `olena-yoga` (region `aws-us-west-2`)** created via the Turso web dashboard. Its 5 tables
+  were created by generating DDL (`npx prisma migrate diff --from-empty --to-schema prisma/schema.prisma
+  --script`) and executing it against Turso with a tiny `@libsql/client` script (see §11 for how to
+  redo this).
+- **Image optimization (the "fast" work):** compressed with ffmpeg — `lena1/2/3.JPG` ~14 MB → 57–146 KB
+  each (only `lena2.JPG` is used, on /about); `certificate.png` (1.2 MB) → `certificate.jpg` (156 KB),
+  and updated the `<Image src>` in `about/page.tsx`. Confirmed the certificate text is still legible.
+- **Verify:** local `npm run build` compiles clean (16 routes); committed + pushed (`1cbcbb3`).
 
 ---
 
@@ -605,9 +624,10 @@ remains as a place name only.
 3. **Raw source media in repo root** is now git-ignored via patterns `/video*.{mov,MP4}`,
    `/a_*.jpeg`, `/b_*.jpeg`, `/photo*.jpg`, `/photo*.jpeg` (optimized versions live in `public/`).
    Still tracked historically: a stray `public/lenaproject/New Microsoft Word Document.docx`.
-3. **Large unoptimized images:** `public/lenaproject/lena*.JPG` are ~13–14 MB each
-   (`next.config.ts` has `images.unoptimized: true`). Slow to load; also break the preview screenshot
-   tool. Consider compressing/resizing.
+3. **Images now compressed (§8.23):** `lena*.JPG` are ~57–146 KB and the certificate is a 156 KB JPG.
+   `next.config.ts` still has `images.unoptimized: true` (predictable/no-surprises). Optional further
+   win: remove `unoptimized` so Vercel serves optimized WebP — test the build if you do.
+   Note `lena1.JPG` / `lena3.JPG` are compressed but **unused** (only `lena2.JPG` is referenced).
 4. **Rate limiter is in-memory** (single-instance only). For serverless/multi-instance hosting, back
    it with Redis/Upstash.
 5. **No Content-Security-Policy** yet. Deliberately skipped — a strict CSP needs careful testing with
@@ -659,3 +679,65 @@ Promise.all([p.contactMessage.count(),p.businessInquiry.count()])\
 - **Live data snapshot (as data existed during this session):** messages and business inquiries are
   the active tables; counts change as people submit the contact + inquiry forms.
 ```
+
+---
+
+## 11. Going live / Deployment runbook — 🚧 IN PROGRESS (resume here)
+
+**Stack:** **Vercel** (host, free) + **Turso** (hosted libSQL database, free). Chosen because the code
+already uses the libSQL adapter, so Turso needs almost no code change and is fast. The custom **domain**
+is bought last (~$10–15/yr). Everything else is free.
+
+### Already set up
+- **GitHub:** `katerynaworkhard-sys/Olena.yoga`, branch `main`, **deploy-ready at commit `1cbcbb3`**.
+- **Vercel:** account created (GitHub login); GitHub app installed; `Olena.yoga` is importable.
+- **Turso:** account created; database **`olena-yoga`** in region **`aws-us-west-2`**; **all 5 tables
+  created** (Booking, BusinessInquiry, ContactMessage, PlanRequest, YogaClass), currently empty.
+  - DB URL: `libsql://olena-yoga-katerynaworkhard-sys.aws-us-west-2.turso.io`
+
+### Environment variables Vercel needs (4)
+Set in Vercel → Project → **Settings → Environment Variables** (Production). **Secret values are
+intentionally NOT written in this committed doc** — obtain them as noted:
+
+| Name | Value source |
+|---|---|
+| `DATABASE_URL` | the Turso DB URL above (`libsql://…aws-us-west-2.turso.io`) |
+| `TURSO_AUTH_TOKEN` | **secret** — Turso dashboard → `olena-yoga` → **Create Token** (Full Access). |
+| `ADMIN_PASSWORD` | **secret** — same value as the local `.env` admin password (for `/admin`). |
+| `AUTH_SECRET` | **secret** — long random string: `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"` |
+
+Read by `src/lib/prisma.ts` (`DATABASE_URL` + `TURSO_AUTH_TOKEN`) and `src/lib/auth.ts`
+(`ADMIN_PASSWORD` + `AUTH_SECRET`).
+
+### Progress checklist
+- [x] 1. Vercel account + GitHub connected.
+- [x] 2. Turso account + `olena-yoga` DB + 5 tables created.
+- [x] 3. Code deploy-ready (Turso auth in `prisma.ts`, `prisma generate` in build, images optimized) → `1cbcbb3`.
+- [ ] 4. **← YOU ARE HERE:** In Vercel, **Import** `Olena.yoga`, add the 4 env vars, click **Deploy**.
+      (User was doing this; waiting on the deploy success/error screenshot.)
+- [ ] 5. Test the live `*.vercel.app` URL: load all pages; **submit the contact form**, then log into
+      `/admin` and confirm the message appears — this proves the Turso DB works end-to-end in production.
+- [ ] 6. Buy a domain (cheapest: Cloudflare Registrar at-cost, or Namecheap; or buy inside Vercel = simplest).
+- [ ] 7. Vercel → Settings → **Domains** → add the domain, then update the registrar's DNS as Vercel
+      instructs. HTTPS is automatic.
+- [ ] 8. Live on the custom domain. 🎉
+
+### (Re)create the Turso tables, if ever needed
+```bash
+# 1) generate SQLite DDL from the Prisma schema (Turso is SQLite-compatible)
+npx prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script > /tmp/ddl.sql
+# 2) run it against Turso using @libsql/client (already a dependency). Pass the URL + token as ENV VARS
+#    (never hardcode the token). During deploy this was a tiny throwaway .mjs:
+#      import { createClient } from '@libsql/client'
+#      const c = createClient({ url: process.env.TURSO_DATABASE_URL, authToken: process.env.TURSO_AUTH_TOKEN })
+#      // split ddl on ';' and c.execute() each CREATE TABLE
+```
+Inspect/edit data: Turso dashboard → `olena-yoga` → **Edit Data**, or the Turso CLI.
+
+### Deploy gotchas
+- **Build must generate the Prisma client** → handled by `build: prisma generate && next build`. No `postinstall`.
+- **`prisma.config.ts` throws if `DATABASE_URL` is unset** → Vercel must have it set at build time
+  (Vercel env vars are available during build by default).
+- **In-memory rate limiter** (§6) resets on cold starts; fine for low traffic, move to Upstash Redis for heavy use.
+- The **Cloudflare tunnel** (§8.20) was only a temporary preview — obsolete once the Vercel URL is live.
+- **Local `prisma/dev.db` data does NOT migrate to Turso.** The live DB starts empty (intended for launch).
